@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 051ba9e31683b6145be3464ef4e53259, type: 3}
+  m_Name: Night Runner
+  m_EditorClassIdentifier: 
+  actorName: Night Runner
+  portrait: {fileID: -230597563, guid: 9bf4e69ea7f2b1c49aeb6b0ead0c0545, type: 3}
