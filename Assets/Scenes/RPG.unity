@@ -899,6 +899,52 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &98377875
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 98377877}
+  - component: {fileID: 98377876}
+  m_Layer: 0
+  m_Name: ArrowPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &98377876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 98377875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64d076b6e99564843b1faca782c58a7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  arrowPrefab: {fileID: 7613872955827167360, guid: f1e53f0234c774648b966a3b41b79016, type: 3}
+  poolSize: 8
+--- !u!4 &98377877
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 98377875}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1079.1086, y: 664.5865, z: -6.1651425}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &192979829
 GameObject:
   m_ObjectHideFlags: 0
@@ -7337,7 +7383,7 @@ Tilemap:
       - {fileID: -545722113, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -985898534, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -1688830185, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5
+      m_AnimationSpeed: 5.0000005
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: 6, y: -19, z: 0}
@@ -7442,7 +7488,7 @@ Tilemap:
       - {fileID: 27974435, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -1705258934, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: 1782678417, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5
+      m_AnimationSpeed: 5.0000005
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: 31, y: -11, z: 0}
@@ -7487,7 +7533,7 @@ Tilemap:
       - {fileID: -98165021, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: 1473575028, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -507061031, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5.0000005
+      m_AnimationSpeed: 5
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: -24, y: -10, z: 0}
@@ -24100,3 +24146,4 @@ SceneRoots:
   - {fileID: 1889915577}
   - {fileID: 1219745080}
   - {fileID: 1430685317}
+  - {fileID: 98377877}

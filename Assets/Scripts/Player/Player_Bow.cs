@@ -6,12 +6,12 @@ using UnityEngine;
 public class Player_Bow : MonoBehaviour
 {
     [SerializeField] private Transform launchPoint;
-    [SerializeField] private GameObject arrowPrefab;
     [SerializeField] private float shootCoolDown = 0.5f;
     [SerializeField] private float ShootTimer;
     [SerializeField] private Animator anim;
     [SerializeField] private PlayerMoveMent playerMoveMent;
     private Vector2 aimDirection = Vector2.right;
+    private Vector2 lockedAimDirection;
 
     private void Update()
     {
@@ -19,6 +19,7 @@ public class Player_Bow : MonoBehaviour
         HandleAiming();
         if (Input.GetButtonDown("Shoot") && ShootTimer <= 0)
         {
+            lockedAimDirection = aimDirection;
             playerMoveMent.isShooting = true;
             anim.SetBool("isShooting", true);
         }
@@ -54,10 +55,8 @@ public class Player_Bow : MonoBehaviour
     {
         if (ShootTimer <= 0)
         {
-            Arrow arrow = Instantiate(arrowPrefab, launchPoint.position, Quaternion.identity).GetComponent<Arrow>();
-            arrow.Direction = aimDirection;
+            ArrowPool.Instance.GetArrow(launchPoint.position, lockedAimDirection);
             ShootTimer = shootCoolDown;
-            
         }
         anim.SetBool("isShooting", false);
         playerMoveMent.isShooting = false;

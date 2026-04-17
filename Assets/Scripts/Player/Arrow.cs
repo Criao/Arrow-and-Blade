@@ -12,10 +12,13 @@ public class Arrow : MonoBehaviour
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private SpriteRenderer sr;
     [SerializeField] private Sprite buriedSprite;
+    [SerializeField] private Sprite originalSprite;
     [SerializeField] private int damage;
     [SerializeField] private float knockbackForce;
     [SerializeField] private float knockbackTime;
     [SerializeField] private float stunTime;
+
+    private Coroutine lifeSpanCoroutine;
     
     public Vector2 Direction
     {
@@ -23,12 +26,18 @@ public class Arrow : MonoBehaviour
         set{direction = value;}
     }
 
-    private void Start()
+    public void Initialize(Vector2 newDirection)
     {
+        direction = newDirection;
+        ResetArrow();
         rb.velocity = direction * speed;
         RotateArrow();
-        Destroy(gameObject, lifeSpawn);
-        
+
+        if (lifeSpanCoroutine != null)
+        {
+            StopCoroutine(lifeSpanCoroutine);
+        }
+        lifeSpanCoroutine = StartCoroutine(LifeSpanTimer());
     }
     private void RotateArrow()
     {
@@ -53,6 +62,58 @@ public class Arrow : MonoBehaviour
         sr.sprite = buriedSprite;
         rb.velocity = Vector2.zero;
         rb.isKinematic = true;
-        transform.SetParent(target); 
+        transform.SetParent(target);
+
+        if (lifeSpanCoroutine != null)
+        {
+            StopCoroutine(lifeSpanCoroutine);
+        }
+        lifeSpanCoroutine = StartCoroutine(DelayedReturn(0.1f));
+    }
+
+    private IEnumerator LifeSpanTimer()
+    {
+        yield return new WaitForSeconds(lifeSpawn);
+        ReturnToPool();
+    }
+
+    private IEnumerator DelayedReturn(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ReturnToPool();
+    }
+
+    private void ResetArrow()
+    {
+        rb.velocity = Vector2.zero;
+        rb.isKinematic = false;
+
+        if (originalSprite != null)
+        {
+            sr.sprite = originalSprite;
+        }
+
+        transform.SetParent(null);
+    }
+
+    private void ReturnToPool()
+    {
+        if (ArrowPool.Instance != null)
+        {
+            ArrowPool.Instance.ReturnArrow(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (lifeSpanCoroutine != null)
+        {
+            StopCoroutine(lifeSpanCoroutine);
+            lifeSpanCoroutine = null;
+        }
     }
 }
