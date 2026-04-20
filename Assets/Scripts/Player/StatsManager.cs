@@ -3,26 +3,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// 玩家属性管理器，管理玩家的战斗、移动和生命属性
+/// </summary>
 public class StatsManager : MonoBehaviour
 {
     public static StatsManager Instance;
-    [SerializeField] private StatsUI statsUI; 
-    [SerializeField] private TMP_Text healthText;
+    [SerializeField] private StatsUI statsUI; // 属性UI引用
+    [SerializeField] private TMP_Text healthText; // 生命值文本
     [Header("Combat Stats")]
-    [SerializeField] private int damage;
-    [SerializeField] private float weaponRange;
-    [SerializeField] private float knockbackForce;
-    [SerializeField] private float knockbackTime;
-    [SerializeField] private float stunTime;
-    
+    [SerializeField] private int damage; // 伤害值
+    [SerializeField] private float weaponRange; // 武器范围
+    [SerializeField] private float knockbackForce; // 击退力度
+    [SerializeField] private float knockbackTime; // 击退时间
+    [SerializeField] private float stunTime; // 眩晕时间
+
 
     [Header("Movement Stats")]
-    [SerializeField] private float speed;
+    [SerializeField] private float speed; // 移动速度
 
     [Header("Health Stats")]
-    [SerializeField] private int currentHealth;
-    [SerializeField] private int maxHealth;
- 
+    [SerializeField] private int currentHealth; // 当前生命值
+    [SerializeField] private int maxHealth; // 最大生命值
+
+    /// <summary>
+    /// 初始化单例
+    /// </summary>
     private void Awake()
     {
         if (Instance == null)
@@ -32,26 +38,42 @@ public class StatsManager : MonoBehaviour
         else
             Destroy(gameObject);
     }
+
+    /// <summary>
+    /// 更新最大生命值
+    /// </summary>
     public void UpdateMaxHealth(int amount)
     {
         maxHealth += amount;
         healthText.text = "HP:" + currentHealth + "/" + maxHealth;
     }
-     public void UpdateHealth(int amount)
+
+    /// <summary>
+    /// 更新当前生命值
+    /// </summary>
+    public void UpdateHealth(int amount)
     {
         currentHealth += amount;
         if(currentHealth >= maxHealth)
             currentHealth = maxHealth;
 
-            
+
         healthText.text = "HP:" + currentHealth + "/" + maxHealth;
-    } 
-     public void UpdateSpeed(int amount)
+    }
+
+    /// <summary>
+    /// 更新移动速度
+    /// </summary>
+    public void UpdateSpeed(int amount)
     {
         speed += amount;
         Debug.Log($"速度更新：{speed - amount} → {speed}");
         statsUI.UpdateAllStats();
     }
+
+    /// <summary>
+    /// 更新伤害值
+    /// </summary>
     public void UpdateDamage(int amount)
     {
         damage += amount;
@@ -59,39 +81,63 @@ public class StatsManager : MonoBehaviour
         statsUI.UpdateAllStats();
     }
     #region Combat Stats 访问接口
+    /// <summary>
+    /// 伤害值属性，限制在1-10之间
+    /// </summary>
     public int Damage
     {
-        /// 获取当前伤害值。
         get { return damage; }
-        /// 设置当前伤害值，使用 Mathf.Clamp 确保值在1到10 之间。
         set
         {
             damage = Mathf.Clamp(value, 1, 10);
         }
     }
+
+    /// <summary>
+    /// 武器范围
+    /// </summary>
     public float WeaponRange => weaponRange;
+
+    /// <summary>
+    /// 击退力度
+    /// </summary>
     public float KnockbackForce => knockbackForce;
+
+    /// <summary>
+    /// 击退时间
+    /// </summary>
     public float KnockbackTime => knockbackTime;
+
+    /// <summary>
+    /// 眩晕时间
+    /// </summary>
     public float StunTime => stunTime;
 
     #endregion
 
     #region Movement Stats
+    /// <summary>
+    /// 移动速度
+    /// </summary>
     public float Speed => speed;
     #endregion
 
     #region Health Stats
-    /// 获取或设置当前健康值。设置时会自动限制在0到最大健康值之间。
+    /// <summary>
+    /// 当前生命值属性，限制在0到最大生命值之间
+    /// </summary>
     public int CurrentHealth
     {
-        /// 获取当前健康值。
         get { return currentHealth; }
-        /// 设置当前健康值，使用 Mathf.Clamp 确保值在0到 maxHealth 之间。
         set
         {
             currentHealth = Mathf.Clamp(value, 0, maxHealth);
         }
     }
+
+    /// <summary>
+    /// 最大生命值
+    /// </summary>
     public int MaxHealth => maxHealth;
     #endregion
 

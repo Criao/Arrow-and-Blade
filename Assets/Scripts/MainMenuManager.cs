@@ -1,15 +1,22 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// 主菜单管理器，处理主菜单的按钮功能
+/// </summary>
 public class MainMenuManager : MonoBehaviour
 {
-    // 开始游戏，加载RPG场景
+    /// <summary>
+    /// 开始游戏，加载RPG场景
+    /// </summary>
     public void StartGame()
     {
-        SceneManager.LoadScene("RPG"); // 如果要加载RPG2，改成 "RPG2"
+        SceneManager.LoadScene("RPG");
     }
 
-    // 退出游戏
+    /// <summary>
+    /// 退出游戏
+    /// </summary>
     public void ExitGame()
     {
         #if UNITY_EDITOR

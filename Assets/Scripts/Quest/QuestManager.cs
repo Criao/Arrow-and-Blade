@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 任务管理器，管理任务的接受、进度更新、完成和奖励发放
+/// </summary>
 public class QuestManager : MonoBehaviour
 {
     public static QuestManager Instance;
@@ -32,7 +35,9 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    // 接受任务
+    /// <summary>
+    /// 接受任务
+    /// </summary>
     public void AcceptQuest(string questID, string questName, string description,
                            int requiredKills, RewardType rewardType, int goldReward,
                            string equipmentReward, string enemyTag = "Goblin")
@@ -65,7 +70,9 @@ public class QuestManager : MonoBehaviour
         Debug.Log($"接受任务: {questName}, 需要击杀 {requiredKills} 个 {enemyTag}");
     }
 
-    // 更新击杀进度
+    /// <summary>
+    /// 更新击杀进度
+    /// </summary>
     public void UpdateKillProgress(string enemyTag)
     {
         foreach (var quest in activeQuests)
@@ -88,7 +95,9 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    // 完成任务
+    /// <summary>
+    /// 完成任务
+    /// </summary>
     private void CompleteQuest(string questID)
     {
         QuestData quest = GetQuest(questID);
@@ -102,7 +111,9 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    // 领取奖励
+    /// <summary>
+    /// 领取奖励
+    /// </summary>
     public void ClaimReward(string questID)
     {
         QuestData quest = GetQuest(questID);
@@ -127,12 +138,13 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    // 发放金币奖励
+    /// <summary>
+    /// 发放金币奖励
+    /// </summary>
     private void GiveGoldReward(int amount)
     {
         Debug.Log($"获得金币: {amount}");
 
-        // 直接添加到 InventoryManager
         if (InventoryManager.Instance != null)
         {
             InventoryManager.Instance.AddGold(amount);
@@ -143,7 +155,9 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    // 发放装备奖励
+    /// <summary>
+    /// 发放装备奖励
+    /// </summary>
     private void GiveEquipmentReward(string equipmentID)
     {
         Debug.Log($"尝试发放装备: {equipmentID}");
@@ -168,27 +182,35 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    // 获取任务
+    /// <summary>
+    /// 获取任务
+    /// </summary>
     public QuestData GetQuest(string questID)
     {
         return activeQuests.Find(q => q.questID == questID);
     }
 
-    // 检查任务是否完成
+    /// <summary>
+    /// 检查任务是否完成
+    /// </summary>
     public bool IsQuestCompleted(string questID)
     {
         QuestData quest = GetQuest(questID);
         return quest != null && quest.status == QuestStatus.Completed;
     }
 
-    // 检查任务是否进行中
+    /// <summary>
+    /// 检查任务是否进行中
+    /// </summary>
     public bool IsQuestInProgress(string questID)
     {
         QuestData quest = GetQuest(questID);
         return quest != null && quest.status == QuestStatus.InProgress;
     }
 
-    // 检查是否有任何活跃的任务（进行中或已完成但未领取奖励）
+    /// <summary>
+    /// 检查是否有任何活跃的任务（进行中或已完成但未领取奖励）
+    /// </summary>
     public bool HasActiveQuest()
     {
         foreach (var quest in activeQuests)

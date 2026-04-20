@@ -1,6 +1,9 @@
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// 任务UI类，显示任务进度和状态
+/// </summary>
 public class QuestUI : MonoBehaviour
 {
     [Header("UI References")]
@@ -26,7 +29,9 @@ public class QuestUI : MonoBehaviour
         QuestManager.OnQuestCompleted -= OnQuestCompleted;
     }
 
-    // 更新任务UI
+    /// <summary>
+    /// 更新任务UI显示
+    /// </summary>
     private void UpdateQuestUI(QuestData quest)
     {
         if (quest.status == QuestStatus.InProgress)
@@ -73,7 +78,9 @@ public class QuestUI : MonoBehaviour
         }
     }
 
-    // 任务完成时的回调
+    /// <summary>
+    /// 任务完成时的回调
+    /// </summary>
     private void OnQuestCompleted(QuestData quest)
     {
         Debug.Log($"UI: 任务 {quest.questName} 已完成！");

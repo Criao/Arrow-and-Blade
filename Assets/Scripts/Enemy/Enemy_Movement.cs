@@ -4,22 +4,25 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.XR;
 
+/// <summary>
+/// 敌人移动和AI控制类，处理敌人的状态切换、追踪和攻击逻辑
+/// </summary>
 public class Enemy_Movement : MonoBehaviour
 {
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private float speed;
+    [SerializeField] private float speed; // 移动速度
     [SerializeField] private Animator animator;
-    [SerializeField] private float attackRange = 2f;
-    [SerializeField] private float attackCoolDown = 2f;
-    [SerializeField] private float playerDetectRange = 5f;
-    [SerializeField] private Transform detectionPoint;
-    [SerializeField] private LayerMask playerLayer;
-    [SerializeField] private LayerMask obstacleLayer; // 障碍物图层（高台、墙壁等）
-    private float attackCoolDownTime;
-    private EnemyState enemyState;
+    [SerializeField] private float attackRange = 2f; // 攻击范围
+    [SerializeField] private float attackCoolDown = 2f; // 攻击冷却时间
+    [SerializeField] private float playerDetectRange = 5f; // 玩家检测范围
+    [SerializeField] private Transform detectionPoint; // 检测点位置
+    [SerializeField] private LayerMask playerLayer; // 玩家图层
+    [SerializeField] private LayerMask obstacleLayer; // 障碍物图层
+    private float attackCoolDownTime; // 攻击冷却计时器
+    private EnemyState enemyState; // 当前状态
 
-    private Transform player;
-    private int facingDirection = 1;
+    private Transform player; // 玩家Transform
+    private int facingDirection = 1; // 面向方向
 
     private void Start()
     {
@@ -27,6 +30,7 @@ public class Enemy_Movement : MonoBehaviour
         animator = GetComponent<Animator>();
         ChangeState(EnemyState.Idle);
     }
+
     private void Update()
     {
         if (enemyState != EnemyState.Knockback)
@@ -45,24 +49,34 @@ public class Enemy_Movement : MonoBehaviour
                 rb.velocity = Vector2.zero;
             }
         }
-
-
     }
+
+    /// <summary>
+    /// 追踪玩家
+    /// </summary>
     private void Chase()
     {
-
+        // 根据玩家位置调整朝向
         if ((player.position.x > transform.position.x && facingDirection == -1) || (player.position.x < transform.position.x && facingDirection == 1))
         {
             Filp();
         }
-        Vector2 direction = (player.transform.position - transform.position).normalized;//(normalized归一化)
+        Vector2 direction = (player.transform.position - transform.position).normalized;
         rb.velocity = direction * speed;
     }
+
+    /// <summary>
+    /// 翻转敌人朝向
+    /// </summary>
     private void Filp()
     {
         facingDirection *= -1;
         transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
     }
+
+    /// <summary>
+    /// 检测玩家并决定敌人行为
+    /// </summary>
     private void CheckForPlayer()
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(detectionPoint.position, playerDetectRange, playerLayer);
@@ -83,7 +97,7 @@ public class Enemy_Movement : MonoBehaviour
                 return;
             }
 
-            //如果玩家在攻击范围内并且攻击冷却时间小于等于0，切换到攻击状态，否则切换到追逐状态
+            // 如果玩家在攻击范围内并且攻击冷却完成，切换到攻击状态
             if (distanceToPlayer <= attackRange && attackCoolDownTime <= 0)
             {
                 attackCoolDownTime = attackCoolDown;
@@ -99,11 +113,14 @@ public class Enemy_Movement : MonoBehaviour
             rb.velocity = Vector2.zero;
             ChangeState(EnemyState.Idle);
         }
-
     }
+
+    /// <summary>
+    /// 切换敌人状态
+    /// </summary>
     public void ChangeState(EnemyState newState)
     {
-        //退出状态
+        // 退出当前状态
         if (enemyState == EnemyState.Idle)
         {
             animator.SetBool("isIdle", false);
@@ -116,9 +133,11 @@ public class Enemy_Movement : MonoBehaviour
         {
             animator.SetBool("isAttacking", false);
         }
-        //更新状态
+
+        // 更新状态
         enemyState = newState;
-        //改变状态
+
+        // 进入新状态
         if (enemyState == EnemyState.Idle)
         {
             animator.SetBool("isIdle", true);
@@ -132,16 +151,21 @@ public class Enemy_Movement : MonoBehaviour
             animator.SetBool("isAttacking", true);
         }
     }
+
     private void OnGrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(detectionPoint.position, playerDetectRange);
     }
 }
+
+/// <summary>
+/// 敌人状态枚举
+/// </summary>
 public enum EnemyState
 {
-    Idle,
-    Chasing,
-    Attacking,
-    Knockback
+    Idle,      // 待机
+    Chasing,   // 追踪
+    Attacking, // 攻击
+    Knockback  // 击退
 }

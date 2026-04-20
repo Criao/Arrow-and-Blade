@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 敌人生成器，在指定区域内随机生成敌人
+/// </summary>
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Spawn Settings")]
-    public GameObject enemyPrefab; // 哥布林预制体
+    public GameObject enemyPrefab; // 敌人预制体
     public int spawnCount = 7; // 生成数量
     public string enemyTag = "Enemy"; // 敌人标签
 
@@ -17,9 +20,11 @@ public class EnemySpawner : MonoBehaviour
     public LayerMask obstacleLayer; // 障碍物图层（避免生成在墙里）
     public float checkRadius = 0.5f; // 检测半径
 
-    private List<GameObject> spawnedEnemies = new List<GameObject>();
+    private List<GameObject> spawnedEnemies = new List<GameObject>(); // 已生成的敌人列表
 
-    // 生成敌人
+    /// <summary>
+    /// 生成敌人
+    /// </summary>
     public void SpawnEnemies()
     {
         Debug.Log("=== 开始生成敌人 ===");
@@ -49,7 +54,9 @@ public class EnemySpawner : MonoBehaviour
         Debug.Log($"=== 生成完成，共生成 {spawnedEnemies.Count}/{spawnCount} 个敌人 ===");
     }
 
-    // 获取有效的生成位置
+    /// <summary>
+    /// 获取有效的生成位置
+    /// </summary>
     private Vector2 GetValidSpawnPosition()
     {
         int maxAttempts = 30; // 最大尝试次数
@@ -88,7 +95,9 @@ public class EnemySpawner : MonoBehaviour
         return Vector2.zero;
     }
 
-    // 清除已生成的敌人
+    /// <summary>
+    /// 清除已生成的敌人
+    /// </summary>
     public void ClearSpawnedEnemies()
     {
         foreach (var enemy in spawnedEnemies)
@@ -101,7 +110,9 @@ public class EnemySpawner : MonoBehaviour
         spawnedEnemies.Clear();
     }
 
-    // 在编辑器中可视化生成区域
+    /// <summary>
+    /// 在编辑器中可视化生成区域
+    /// </summary>
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

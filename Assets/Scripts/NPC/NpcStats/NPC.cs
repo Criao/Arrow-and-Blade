@@ -1,18 +1,26 @@
-// NPC.cs
 using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// NPC控制器，管理NPC的状态切换（巡逻/对话）
+/// </summary>
 public class NPC : MonoBehaviour
 {
+    /// <summary>
+    /// NPC状态枚举
+    /// </summary>
     public enum NPCState { Patrol, Talk }
     public NPCState currentState = NPCState.Patrol;
 
-    [SerializeField] private NPC_Patrol npcPatrol;
-    [SerializeField] private NPC_Talk npcTalk;
+    [SerializeField] private NPC_Patrol npcPatrol; // 巡逻组件
+    [SerializeField] private NPC_Talk npcTalk; // 对话组件
 
     [Header("Quest Settings")]
     public string questID; // 该NPC关联的任务ID
 
+    /// <summary>
+    /// 初始化，设置为巡逻状态并监听任务完成事件
+    /// </summary>
     private void Start()
     {
         SetState(NPCState.Patrol);
@@ -21,13 +29,17 @@ public class NPC : MonoBehaviour
         QuestManager.OnQuestCompleted += OnQuestCompleted;
     }
 
+    /// <summary>
+    /// 销毁时取消事件监听
+    /// </summary>
     private void OnDestroy()
     {
-        // 取消监听
         QuestManager.OnQuestCompleted -= OnQuestCompleted;
     }
 
-    // 任务完成时的回调
+    /// <summary>
+    /// 任务完成时的回调
+    /// </summary>
     private void OnQuestCompleted(QuestData quest)
     {
         // 如果完成的是该NPC的任务，重新显示NPC
@@ -38,6 +50,9 @@ public class NPC : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 设置NPC状态
+    /// </summary>
     public void SetState(NPCState newState)
     {
         currentState = newState;
@@ -56,10 +71,11 @@ public class NPC : MonoBehaviour
         }
     }
 
-    // ← 新增，由 NPC 物体执行协程，避免 NPC_Talk 禁用后协程中断
+    /// <summary>
+    /// 启动关闭动画（由NPC物体执行协程，避免NPC_Talk禁用后协程中断）
+    /// </summary>
     public void StartCloseAnimation(Animator animator, GameObject obj)
     {
-        // 检查 DialogueManager 是否存在
         if (DialogueManager.Instance != null)
         {
             DialogueManager.Instance.StartCloseAnimation(animator, obj);
@@ -67,12 +83,14 @@ public class NPC : MonoBehaviour
         else
         {
             Debug.LogWarning("DialogueManager.Instance 为空，无法执行关闭动画");
-            // 直接隐藏对象
             if (obj != null)
                 obj.SetActive(false);
         }
     }
 
+    /// <summary>
+    /// 播放关闭动画并隐藏对象
+    /// </summary>
     private IEnumerator CloseAndHide(Animator animator, GameObject obj)
     {
         animator.Play("Close");

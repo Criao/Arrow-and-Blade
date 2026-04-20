@@ -4,23 +4,28 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-
+/// <summary>
+/// 对话管理器，管理对话的显示、推进和结束
+/// </summary>
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
     [Header("UI References")]
-    public Image portrait;
-    public TMP_Text actorName;
-    public TMP_Text dialogueText;
-    public GameObject dialoguePanel; // ← 拖入对话面板物体
-    public bool isDilaogueActive;
+    public Image portrait; // 角色头像
+    public TMP_Text actorName; // 角色名称
+    public TMP_Text dialogueText; // 对话文本
+    public GameObject dialoguePanel; // 对话面板
+    public bool isDilaogueActive; // 对话是否激活
 
     [Header("Quest System")]
     public Accept acceptScript; // Accept脚本引用
 
-    private DialogueSO currentDialogue;
-    private int dialogueIndex;
+    private DialogueSO currentDialogue; // 当前对话数据
+    private int dialogueIndex; // 当前对话索引
 
+    /// <summary>
+    /// 初始化单例，跨场景保留
+    /// </summary>
     private void Awake()
     {
         Debug.Log("DialogueManager Awake 被调用");
@@ -28,14 +33,14 @@ public class DialogueManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // 跨场景保留DialogCanvas
+            DontDestroyOnLoad(gameObject);
             Debug.Log("DialogueManager Instance 已设置");
         }
         else
         {
             Debug.LogWarning("场景中已存在DialogueManager，销毁重复的对象");
             Destroy(gameObject);
-            return; // 销毁后直接返回，不执行后续代码
+            return;
         }
 
         // 确保 DialogCanvas 始终激活
@@ -53,19 +58,26 @@ public class DialogueManager : MonoBehaviour
         if (dialoguePanel != null)
             dialoguePanel.SetActive(false);
     }
+
+    /// <summary>
+    /// 开始对话
+    /// </summary>
     public void StartDialogue(DialogueSO dialogueSO)
     {
         currentDialogue = dialogueSO;
         dialogueIndex = 0;
         isDilaogueActive = true;
         dialoguePanel.SetActive(true);
-        // ← 确保 Canvas Group 可交互
+        // 确保 Canvas Group 可交互
         GetComponent<CanvasGroup>().alpha = 1;
         GetComponent<CanvasGroup>().interactable = true;
         GetComponent<CanvasGroup>().blocksRaycasts = true;
         ShowDialogue();
     }
 
+    /// <summary>
+    /// 推进对话到下一句
+    /// </summary>
     public void AdvanceDialogue()
     {
         if (dialogueIndex < currentDialogue.lines.Length)
@@ -77,15 +89,18 @@ public class DialogueManager : MonoBehaviour
             // 对话结束，检查是否有任务
             if (currentDialogue.hasQuest)
             {
-                ShowQuestChoices(); // 显示任务选择按钮
+                ShowQuestChoices();
             }
             else
             {
-                EndDialogue(); // 直接结束对话
+                EndDialogue();
             }
         }
     }
 
+    /// <summary>
+    /// 显示当前对话行
+    /// </summary>
     private void ShowDialogue()
     {
         DialogueLine line = currentDialogue.lines[dialogueIndex];
@@ -95,6 +110,9 @@ public class DialogueManager : MonoBehaviour
         dialogueIndex++;
     }
 
+    /// <summary>
+    /// 结束对话
+    /// </summary>
     public void EndDialogue()
     {
         isDilaogueActive = false;
@@ -119,14 +137,16 @@ public class DialogueManager : MonoBehaviour
         dialogueIndex = 0;
     }
 
-    // 显示任务选择按钮
+    /// <summary>
+    /// 显示任务选择按钮
+    /// </summary>
     private void ShowQuestChoices()
     {
         Debug.Log("尝试显示任务选择按钮");
         if (acceptScript != null)
         {
             Debug.Log("Accept脚本存在，调用ShowChoices");
-            acceptScript.ShowChoices(currentDialogue); // 传递当前对话数据
+            acceptScript.ShowChoices(currentDialogue);
         }
         else
         {
@@ -134,6 +154,9 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 启动关闭动画
+    /// </summary>
     public void StartCloseAnimation(Animator anim, GameObject obj)
     {
         if (this != null && gameObject != null)
@@ -146,6 +169,9 @@ public class DialogueManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 播放关闭动画并隐藏对象
+    /// </summary>
     private IEnumerator CloseAndHide(Animator anim, GameObject obj)
     {
         // 检查对象是否存在且激活

@@ -2,8 +2,14 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
+/// <summary>
+/// Raycast调试工具，用于调试UI点击事件
+/// </summary>
 public class RaycastDebugger : MonoBehaviour
 {
+    /// <summary>
+    /// 每帧检测鼠标点击，输出射线检测结果
+    /// </summary>
     void Update()
     {
         if (Input.GetMouseButtonDown(0))

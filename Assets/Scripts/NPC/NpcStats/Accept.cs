@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// 任务接受UI，处理玩家接受/拒绝任务的选择
+/// </summary>
 public class Accept : MonoBehaviour
 {
     [Header("Button References")]
@@ -27,6 +30,9 @@ public class Accept : MonoBehaviour
 
     private DialogueSO currentDialogue; // 当前对话数据
 
+    /// <summary>
+    /// 初始化，绑定按钮事件
+    /// </summary>
     private void Start()
     {
         // 绑定按钮事件
@@ -47,7 +53,9 @@ public class Accept : MonoBehaviour
             choicesPanel.SetActive(false);
     }
 
-    // 显示选择按钮
+    /// <summary>
+    /// 显示任务选择按钮
+    /// </summary>
     public void ShowChoices(DialogueSO dialogue)
     {
         Debug.Log("ShowChoices被调用");
@@ -77,14 +85,18 @@ public class Accept : MonoBehaviour
         }
     }
 
-    // 隐藏选择按钮
+    /// <summary>
+    /// 隐藏任务选择按钮
+    /// </summary>
     public void HideChoices()
     {
         if (choicesPanel != null)
             choicesPanel.SetActive(false);
     }
 
-    // Yes按钮 - 接受任务（金币奖励）
+    /// <summary>
+    /// Yes按钮点击 - 接受任务（金币奖励）
+    /// </summary>
     private void OnYesClicked()
     {
         Debug.Log($"玩家接受了任务（金币奖励: {currentDialogue.goldReward}）");
@@ -121,7 +133,9 @@ public class Accept : MonoBehaviour
         HideChoices();
     }
 
-    // No按钮 - 拒绝任务
+    /// <summary>
+    /// No按钮点击 - 拒绝任务
+    /// </summary>
     private void OnNoClicked()
     {
         Debug.Log("玩家拒绝了任务");
@@ -131,7 +145,9 @@ public class Accept : MonoBehaviour
         HideChoices();
     }
 
-    // Option3按钮 - 稍后进行
+    /// <summary>
+    /// Option3按钮点击 - 稍后进行
+    /// </summary>
     private void OnOption3Clicked()
     {
         Debug.Log("玩家选择稍后进行");
@@ -141,7 +157,9 @@ public class Accept : MonoBehaviour
         HideChoices();
     }
 
-    // Option4按钮 - 接受任务（装备奖励）
+    /// <summary>
+    /// Option4按钮点击 - 接受任务（装备奖励）
+    /// </summary>
     private void OnOption4Clicked()
     {
         Debug.Log($"玩家接受了任务（装备奖励: {currentDialogue.equipmentReward}）");

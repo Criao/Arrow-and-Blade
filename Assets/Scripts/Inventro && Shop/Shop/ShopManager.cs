@@ -4,13 +4,17 @@ using UnityEngine;
 using System;
 using Unity.VisualScripting;
 
+/// <summary>
+/// 商店管理器，处理商品展示、购买和出售逻辑
+/// </summary>
 public class ShopManager : MonoBehaviour
 {
-
-    [SerializeField] private ShopSlot[] shopSlots;
+    [SerializeField] private ShopSlot[] shopSlots; // 商店槽位数组
     [SerializeField] private InventoryManager inventoryManager;
 
-
+    /// <summary>
+    /// 填充商店物品
+    /// </summary>
     public void PopulateShopItems(List<ShopItem> shopItems)
     {
         for (int i = 0; i < shopItems.Count && i < shopSlots.Length; i++)
@@ -24,9 +28,12 @@ public class ShopManager : MonoBehaviour
             shopSlots[i].gameObject.SetActive(false);
         }
     }
+
+    /// <summary>
+    /// 尝试购买物品
+    /// </summary>
     public void TryBuyItem(ItemSo itemSo, int price)
     {
-        // 先检查各个引用是否为空
         if (inventoryManager == null)
         {
             Debug.LogError("❌ inventoryManager 是 null！");
@@ -57,6 +64,10 @@ public class ShopManager : MonoBehaviour
         inventoryManager.AddItem(itemSo, 1);
         Debug.Log($"✅ 购买成功: {itemSo.ItemName}");
     }
+
+    /// <summary>
+    /// 检查背包是否有空间
+    /// </summary>
     private bool HasSpaceForItem(ItemSo itemSo)
     {
         foreach (var slot in inventoryManager.itemSlots)
@@ -68,10 +79,16 @@ public class ShopManager : MonoBehaviour
         }
         return false;
     }
+
+    /// <summary>
+    /// 出售物品
+    /// </summary>
     public void SellItem(ItemSo itemSo)
     {
         if (itemSo == null)
             return;
+
+        // 如果物品在商店中，按商店价格-1出售
         foreach (var slot in shopSlots)
         {
             if (slot.ItemSo == itemSo)
@@ -82,31 +99,44 @@ public class ShopManager : MonoBehaviour
                 return;
             }
         }
-        // 不在商店里的物品，用 ItemSo 自带的售价
+
+        // 不在商店里的物品，用ItemSo自带的售价
         inventoryManager.gold += itemSo.SellPrice;
         inventoryManager.goldText.text = inventoryManager.gold.ToString();
     }
-    // ShopManager.cs 新增三个方法，把这三个绑给按钮
+
+    /// <summary>
+    /// 物品标签页点击事件
+    /// </summary>
     public void OnItemTabClicked()
     {
         ShopKeeper.currentShopKeeper?.OpenItemShop();
     }
 
+    /// <summary>
+    /// 武器标签页点击事件
+    /// </summary>
     public void OnWeaponTabClicked()
     {
         ShopKeeper.currentShopKeeper?.OpenWeaponShop();
     }
 
+    /// <summary>
+    /// 护甲标签页点击事件
+    /// </summary>
     public void OnArmourTabClicked()
     {
         ShopKeeper.currentShopKeeper?.OpenArmourShop();
     }
 }
 
+/// <summary>
+/// 商店物品数据类
+/// </summary>
 [Serializable]
 public class ShopItem
 {
-    public ItemSo itemSo;
-    public int price;
+    public ItemSo itemSo; // 物品数据
+    public int price; // 价格
     public int initialStock = 5; // 初始库存
 }

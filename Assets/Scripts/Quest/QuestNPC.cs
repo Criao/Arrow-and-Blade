@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// 任务NPC类，处理任务完成后的奖励发放
+/// </summary>
 public class QuestNPC : MonoBehaviour
 {
     [Header("Quest Settings")]
@@ -7,7 +10,7 @@ public class QuestNPC : MonoBehaviour
     public DialogueSO questDialogue; // 任务对话
     public DialogueSO rewardDialogue; // 奖励对话
 
-    private bool questCompleted = false;
+    private bool questCompleted = false; // 任务是否完成
 
     private void Start()
     {
@@ -20,7 +23,9 @@ public class QuestNPC : MonoBehaviour
         QuestManager.OnQuestCompleted -= OnQuestCompleted;
     }
 
-    // 任务完成回调
+    /// <summary>
+    /// 任务完成回调
+    /// </summary>
     private void OnQuestCompleted(QuestData quest)
     {
         if (quest.questID == questID)
@@ -30,7 +35,9 @@ public class QuestNPC : MonoBehaviour
         }
     }
 
-    // 玩家与NPC交互时调用（由NPC_Talk调用）
+    /// <summary>
+    /// 玩家与NPC交互时调用（由NPC_Talk调用）
+    /// </summary>
     public void OnPlayerInteract()
     {
         if (questCompleted && QuestManager.Instance != null)
@@ -47,7 +54,9 @@ public class QuestNPC : MonoBehaviour
         }
     }
 
-    // 检查任务是否完成
+    /// <summary>
+    /// 检查任务是否完成
+    /// </summary>
     public bool IsQuestCompleted()
     {
         return questCompleted;

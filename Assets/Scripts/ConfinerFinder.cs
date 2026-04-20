@@ -4,26 +4,40 @@ using UnityEngine;
 using Cinemachine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Cinemachine相机边界查找器，自动查找场景中的Confiner边界
+/// </summary>
 public class ConfinerFinder : MonoBehaviour
 {
-    private CinemachineConfiner2D confiner;
+    private CinemachineConfiner2D confiner; // Cinemachine边界组件
 
+    /// <summary>
+    /// 初始化，缓存组件
+    /// </summary>
     private void Awake()
     {
-        // 提前缓存组件，避免重复 GetComponent
         confiner = GetComponent<CinemachineConfiner2D>();
     }
 
-    private void OnEnable()  // ✅ 修复拼写错误
+    /// <summary>
+    /// 启用时监听场景加载事件
+    /// </summary>
+    private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    /// <summary>
+    /// 禁用时取消监听
+    /// </summary>
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    /// <summary>
+    /// 场景加载完成时查找并设置边界
+    /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         GameObject confinerObj = GameObject.FindWithTag("Confiner");
@@ -43,6 +57,6 @@ public class ConfinerFinder : MonoBehaviour
         }
 
         confiner.m_BoundingShape2D = polygon;
-        confiner.InvalidateCache(); // ✅ 关键：清除旧边界缓存，强制重新计算
+        confiner.InvalidateCache();
     }
 }

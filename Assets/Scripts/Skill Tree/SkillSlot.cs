@@ -4,23 +4,25 @@ using TMPro;
 using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// 技能槽位类，管理单个技能的状态、升级和UI显示
+/// </summary>
 public class SkillSlot : MonoBehaviour
 {
-    [SerializeField] private List<SkillSlot> prerequisiteSkillSlots;
-    [SerializeField] private SkillSo skillSo;
+    [SerializeField] private List<SkillSlot> prerequisiteSkillSlots; // 前置技能槽位列表
+    [SerializeField] private SkillSo skillSo; // 技能数据
     public SkillSo SkillSo => skillSo;
-    [SerializeField] private Image skillIcon;
-    [SerializeField] private int currentLevel;
-    [SerializeField] private bool isUnlocked;
-    [SerializeField] private TMP_Text skilllevelText;
-    [SerializeField] private Button skillButton;
+    [SerializeField] private Image skillIcon; // 技能图标
+    [SerializeField] private int currentLevel; // 当前等级
+    [SerializeField] private bool isUnlocked; // 是否已解锁
+    [SerializeField] private TMP_Text skilllevelText; // 等级文本
+    [SerializeField] private Button skillButton; // 技能按钮
 
     public Button SkillButton => skillButton;
     public bool IsUnlocked => isUnlocked;
 
-    // ✅ 改为 Func，能接收 Manager 返回的 bool
-    public static event Action<SkillSlot> OnAbilityPointSpent;
-    public static event Action<SkillSlot> OnSkillMaxed;
+    public static event Action<SkillSlot> OnAbilityPointSpent; // 技能点消耗事件
+    public static event Action<SkillSlot> OnSkillMaxed; // 技能满级事件
 
     private void OnValidate()
     {
@@ -30,7 +32,9 @@ public class SkillSlot : MonoBehaviour
         }
     }
 
-    // ✅ 改为 public，且名字大写 U 与 Manager 对齐
+    /// <summary>
+    /// 检查是否可以解锁该技能（前置技能是否满足）
+    /// </summary>
     public bool CanUnlockSkill()
     {
         foreach (SkillSlot slot in prerequisiteSkillSlots)
@@ -43,21 +47,25 @@ public class SkillSlot : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// 解锁技能
+    /// </summary>
     public void UnlockSkill()
     {
         isUnlocked = true;
         UpdateUI();
     }
 
-    // ✅ 统一入口，删除多余的 UpdateSkill / TryUpGradeSkill 包装
+    /// <summary>
+    /// 尝试升级技能
+    /// </summary>
     public void TryUpgradeSkill()
     {
         if (isUnlocked && currentLevel < skillSo.MaxLevel)
         {
-            // ✅ 接收返回值，扣点成功才升级
             OnAbilityPointSpent?.Invoke(this);
             currentLevel++;
-            
+
             if (currentLevel >= skillSo.MaxLevel)
             {
                 OnSkillMaxed?.Invoke(this);
@@ -66,6 +74,9 @@ public class SkillSlot : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 更新UI显示
+    /// </summary>
     private void UpdateUI()
     {
         if (skillSo == null)

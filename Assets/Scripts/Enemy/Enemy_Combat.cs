@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
+/// <summary>
+/// 敌人战斗类，处理敌人的攻击判定和伤害
+/// </summary>
 public class Enemy_Combat : MonoBehaviour
 {
-    [SerializeField] private int damage = 1;
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private float weaponRange;
-    [SerializeField] private float knockbackForce;
-    [SerializeField] private LayerMask playerLayer;
-    [SerializeField] private float stunTime;
+    [SerializeField] private int damage = 1; // 攻击伤害
+    [SerializeField] private Transform attackPoint; // 攻击判定点
+    [SerializeField] private float weaponRange; // 武器范围
+    [SerializeField] private float knockbackForce; // 击退力度
+    [SerializeField] private LayerMask playerLayer; // 玩家图层
+    [SerializeField] private float stunTime; // 眩晕时间
+
+    /// <summary>
+    /// 执行攻击（由动画事件调用）
+    /// </summary>
     private void Attack()
     {
        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position,weaponRange,playerLayer);

@@ -2,22 +2,30 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// 场景切换触发器，玩家触碰后切换场景
+/// </summary>
 public class SceneChange : MonoBehaviour
 {
-    [SerializeField] private string sceneToLoad;
-    [SerializeField] private Animator fadeAnimator;
-    [SerializeField] private float fadeTime = 0.5f;
-    [SerializeField] private Vector2 newPlayerPosition;
-    [SerializeField] private CanvasGroup fadeCanvasGroup; // 拖入 FadeCanvas
-    private Transform player;
+    [SerializeField] private string sceneToLoad; // 要加载的场景名称
+    [SerializeField] private Animator fadeAnimator; // 淡入淡出动画控制器
+    [SerializeField] private float fadeTime = 0.5f; // 淡入淡出时间
+    [SerializeField] private Vector2 newPlayerPosition; // 玩家在新场景的位置
+    [SerializeField] private CanvasGroup fadeCanvasGroup; // 淡入淡出Canvas组
+    private Transform player; // 玩家Transform
 
+    /// <summary>
+    /// 游戏启动时关闭遮罩拦截
+    /// </summary>
     private void Start()
     {
-        // 游戏启动时关闭拦截，让 Fade_From_White 动画正常播放但不挡点击
         if (fadeCanvasGroup != null)
             fadeCanvasGroup.blocksRaycasts = false;
     }
 
+    /// <summary>
+    /// 玩家触碰触发器时切换场景
+    /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Player")
@@ -26,7 +34,6 @@ public class SceneChange : MonoBehaviour
             if (QuestManager.Instance != null && QuestManager.Instance.HasActiveQuest())
             {
                 Debug.Log("任务进行中，无法传送！请先完成或放弃任务。");
-                // 可以在这里显示提示UI
                 return;
             }
 
@@ -34,11 +41,14 @@ public class SceneChange : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 延迟淡入淡出协程
+    /// </summary>
     IEnumerator DelayFade()
     {
         yield return new WaitForSeconds(fadeTime);
         player.position = newPlayerPosition;
-        fadeCanvasGroup.blocksRaycasts = false; // 切换场景前关闭拦截
+        fadeCanvasGroup.blocksRaycasts = false;
         SceneManager.LoadScene(sceneToLoad);
     }
 }

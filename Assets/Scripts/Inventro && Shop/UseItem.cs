@@ -2,8 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 物品使用类，处理不同类型物品的效果应用
+/// </summary>
 public class UseItem : MonoBehaviour
 {
+    /// <summary>
+    /// 应用物品效果
+    /// </summary>
     public void ApplyItemEffects(ItemSo itemSo)
     {
         Debug.Log($"使用物品：{itemSo.ItemName}，类型：{itemSo.itemType}");
@@ -26,7 +32,9 @@ public class UseItem : MonoBehaviour
         }
     }
 
-    // 普通物品效果（肉）
+    /// <summary>
+    /// 普通物品效果（如肉类）
+    /// </summary>
     private void ApplyNormalItem(ItemSo itemSo)
     {
         if (itemSo.CurrentHealth > 0)
@@ -39,51 +47,60 @@ public class UseItem : MonoBehaviour
             StartCoroutine(EffectTimer(itemSo, itemSo.Duration));
     }
 
-    // 蘑菇效果：50%概率掉1滴血 或 增加攻击力1点30秒
+    /// <summary>
+    /// 蘑菇效果：50%概率掉1滴血 或 增加攻击力1点30秒
+    /// </summary>
     private void ApplyMushroomEffect()
     {
         float random = Random.Range(0f, 1f);
 
         if (random < 0.5f)
         {
-            // 50%概率：掉1滴血
             Debug.Log("蘑菇效果：掉1滴血");
             StatsManager.Instance.UpdateHealth(-1);
         }
         else
         {
-            // 50%概率：增加攻击力1点持续30秒
             Debug.Log("蘑菇效果：增加攻击力1点持续30秒");
             StatsManager.Instance.UpdateDamage(1);
             StartCoroutine(RemoveDamageBonus(1, 30f));
         }
     }
 
-    // 南瓜效果：提高移动速度20秒
+    /// <summary>
+    /// 南瓜效果：提高移动速度20秒
+    /// </summary>
     private void ApplyPumpkinEffect()
     {
         Debug.Log("南瓜效果：提高移动速度20秒");
-        int speedBonus = 2; // 速度提升量
+        int speedBonus = 2;
         StatsManager.Instance.UpdateSpeed(speedBonus);
         StartCoroutine(RemoveSpeedBonus(speedBonus, 20f));
     }
 
-    // 移除攻击力加成
+    /// <summary>
+    /// 移除攻击力加成
+    /// </summary>
     private IEnumerator RemoveDamageBonus(int amount, float duration)
     {
-        yield return new WaitForSecondsRealtime(duration); // 使用Realtime，不受Time.timeScale影响
+        yield return new WaitForSecondsRealtime(duration);
         StatsManager.Instance.UpdateDamage(-amount);
         Debug.Log("蘑菇效果结束：攻击力恢复");
     }
 
-    // 移除速度加成
+    /// <summary>
+    /// 移除速度加成
+    /// </summary>
     private IEnumerator RemoveSpeedBonus(int amount, float duration)
     {
-        yield return new WaitForSecondsRealtime(duration); // 使用Realtime，不受Time.timeScale影响
+        yield return new WaitForSecondsRealtime(duration);
         StatsManager.Instance.UpdateSpeed(-amount);
         Debug.Log("南瓜效果结束：速度恢复");
     }
 
+    /// <summary>
+    /// 临时效果计时器
+    /// </summary>
     private IEnumerator EffectTimer(ItemSo itemSo, float duration)
     {
         yield return new WaitForSeconds(duration);

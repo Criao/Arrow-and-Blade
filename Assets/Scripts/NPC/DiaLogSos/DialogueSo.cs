@@ -2,10 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 对话数据ScriptableObject，存储对话内容和任务信息
+/// </summary>
 [CreateAssetMenu(fileName = "DialogueSO", menuName = "Dialogue/DialogueNode")]
-public class DialogueSO : ScriptableObject // ← 改成大写O
+public class DialogueSO : ScriptableObject
 {
-    public DialogueLine[] lines;
+    public DialogueLine[] lines; // 对话行数组
 
     [Header("Quest Settings")]
     public bool hasQuest; // 是否包含任务
@@ -18,10 +21,12 @@ public class DialogueSO : ScriptableObject // ← 改成大写O
     public string equipmentReward; // 装备奖励ID
 }
 
-
+/// <summary>
+/// 对话行数据，包含说话者和对话文本
+/// </summary>
 [System.Serializable]
 public class DialogueLine
 {
-    public ActorSo speaker;
-    [SerializeField] [TextArea(3, 5)] public string text;
+    public ActorSo speaker; // 说话者
+    [SerializeField] [TextArea(3, 5)] public string text; // 对话文本
 }
