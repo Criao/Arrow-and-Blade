@@ -4,8 +4,13 @@ public class ToggleSkillTree : MonoBehaviour
 {
     [SerializeField] private CanvasGroup statsCanvas;
 
-    private const string PauseOwner = nameof(ToggleSkillTree);
+    private string pauseOwner;
     private bool skillTreeOpen;
+
+    private void Awake()
+    {
+        pauseOwner = $"{nameof(ToggleSkillTree)}:{GetInstanceID()}";
+    }
 
     private void Start()
     {
@@ -23,6 +28,10 @@ public class ToggleSkillTree : MonoBehaviour
         {
             CloseSkillTree();
         }
+        else if (PauseManager.IsPaused)
+        {
+            return;
+        }
         else
         {
             OpenSkillTree();
@@ -34,7 +43,7 @@ public class ToggleSkillTree : MonoBehaviour
         if (skillTreeOpen)
         {
             skillTreeOpen = false;
-            PauseManager.SetPaused(PauseOwner, false);
+            PauseManager.SetPaused(pauseOwner, false);
         }
     }
 
@@ -42,14 +51,14 @@ public class ToggleSkillTree : MonoBehaviour
     {
         skillTreeOpen = true;
         SetCanvasVisible(true);
-        PauseManager.SetPaused(PauseOwner, true);
+        PauseManager.SetPaused(pauseOwner, true);
     }
 
     private void CloseSkillTree()
     {
         skillTreeOpen = false;
         SetCanvasVisible(false);
-        PauseManager.SetPaused(PauseOwner, false);
+        PauseManager.SetPaused(pauseOwner, false);
     }
 
     private void SetCanvasVisible(bool visible)

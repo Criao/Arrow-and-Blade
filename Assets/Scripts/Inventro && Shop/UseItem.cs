@@ -55,7 +55,9 @@ public class UseItem : MonoBehaviour
             stats.UpdateMaxHealth(itemSo.MaxHealth);
         if (itemSo.Speed > 0)
             stats.UpdateSpeed(itemSo.Speed);
-        if (itemSo.Duration > 0)
+        if (itemSo.Damage > 0)
+            stats.UpdateDamage(itemSo.Damage);
+        if (itemSo.Duration > 0 && (itemSo.MaxHealth > 0 || itemSo.Speed > 0 || itemSo.Damage > 0))
             StartCoroutine(EffectTimer(itemSo, itemSo.Duration));
     }
 
@@ -137,18 +139,18 @@ public class UseItem : MonoBehaviour
     /// </summary>
     private IEnumerator EffectTimer(ItemSo itemSo, float duration)
     {
-        yield return new WaitForSeconds(duration);
+        yield return new WaitForSecondsRealtime(duration);
         StatsManager stats = StatsManager.Instance;
         if (stats == null)
         {
             yield break;
         }
 
-        if (itemSo.CurrentHealth > 0)
-            stats.UpdateHealth(-itemSo.CurrentHealth);
         if (itemSo.MaxHealth > 0)
             stats.UpdateMaxHealth(-itemSo.MaxHealth);
         if (itemSo.Speed > 0)
             stats.UpdateSpeed(-itemSo.Speed);
+        if (itemSo.Damage > 0)
+            stats.UpdateDamage(-itemSo.Damage);
     }
 }

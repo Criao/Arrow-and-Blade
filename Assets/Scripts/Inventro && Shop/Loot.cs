@@ -58,7 +58,16 @@ public class Loot : MonoBehaviour
     /// </summary>
     private void UpdateAppearance()
     {
-        sr.sprite = itemSo.Icon;
+        if (itemSo == null)
+        {
+            return;
+        }
+
+        if (sr != null)
+        {
+            sr.sprite = itemSo.Icon;
+        }
+
         this.name = itemSo.ItemName;
     }
 
@@ -67,11 +76,20 @@ public class Loot : MonoBehaviour
     /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Player" && canBePickedUp == true)
+        if (!collision.CompareTag("Player") || !canBePickedUp || itemSo == null || quantity <= 0)
+        {
+            return;
+        }
+
+        canBePickedUp = false;
+        HitFeedbackAudio.PlayLightHitConfirm(transform.position);
+
+        if (anim != null)
         {
             anim.Play("LootPickUp");
-            OnItemLooted?.Invoke(itemSo, quantity);
-            Destroy(gameObject, 0.5f);
         }
+
+        OnItemLooted?.Invoke(itemSo, quantity);
+        Destroy(gameObject, 0.5f);
     }
 }

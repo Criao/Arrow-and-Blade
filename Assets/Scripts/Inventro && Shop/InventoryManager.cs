@@ -20,7 +20,16 @@ public class InventoryManager : MonoBehaviour
         }
         else
         {
+            gameObject.SetActive(false);
             Destroy(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
         }
     }
 

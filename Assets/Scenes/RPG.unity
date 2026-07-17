@@ -7383,7 +7383,7 @@ Tilemap:
       - {fileID: -545722113, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -985898534, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -1688830185, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5.0000005
+      m_AnimationSpeed: 5
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: 6, y: -19, z: 0}
@@ -7488,7 +7488,7 @@ Tilemap:
       - {fileID: 27974435, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -1705258934, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: 1782678417, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5.0000005
+      m_AnimationSpeed: 5
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: 31, y: -11, z: 0}
@@ -7683,7 +7683,7 @@ Tilemap:
       - {fileID: -98165021, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: 1473575028, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -507061031, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5
+      m_AnimationSpeed: 5.0000005
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: -16, y: 9, z: 0}
@@ -7758,7 +7758,7 @@ Tilemap:
       - {fileID: 149737583, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: 1325828685, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
       - {fileID: -1472809981, guid: 01c0d188583ddb34f9dbd05a1990a73c, type: 3}
-      m_AnimationSpeed: 5
+      m_AnimationSpeed: 5.0000005
       m_AnimationTimeOffset: 0
       m_Flags: 0
   - first: {x: 16, y: 12, z: 0}
@@ -23034,6 +23034,10 @@ PrefabInstance:
     - target: {fileID: 7180001595173945329, guid: c53107931cd23844ab0fe34a9502af00, type: 3}
       propertyPath: m_Name
       value: ExperienceCanves
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920766034302310263, guid: c53107931cd23844ab0fe34a9502af00, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -716
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

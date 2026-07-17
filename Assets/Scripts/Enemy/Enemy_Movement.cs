@@ -26,13 +26,25 @@ public class Enemy_Movement : MonoBehaviour
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
+        if (rb == null)
+        {
+            rb = GetComponent<Rigidbody2D>();
+        }
+
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
         ChangeState(EnemyState.Idle);
     }
 
     private void Update()
     {
+        if (rb == null || detectionPoint == null)
+        {
+            return;
+        }
+
         if (enemyState != EnemyState.Knockback)
         {
             CheckForPlayer();
@@ -56,6 +68,11 @@ public class Enemy_Movement : MonoBehaviour
     /// </summary>
     private void Chase()
     {
+        if (player == null || rb == null)
+        {
+            return;
+        }
+
         // 根据玩家位置调整朝向
         if ((player.position.x > transform.position.x && facingDirection == -1) || (player.position.x < transform.position.x && facingDirection == 1))
         {
@@ -79,6 +96,11 @@ public class Enemy_Movement : MonoBehaviour
     /// </summary>
     private void CheckForPlayer()
     {
+        if (detectionPoint == null || rb == null)
+        {
+            return;
+        }
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(detectionPoint.position, playerDetectRange, playerLayer);
         if (hits.Length > 0)
         {
@@ -120,6 +142,12 @@ public class Enemy_Movement : MonoBehaviour
     /// </summary>
     public void ChangeState(EnemyState newState)
     {
+        if (animator == null)
+        {
+            enemyState = newState;
+            return;
+        }
+
         // 退出当前状态
         if (enemyState == EnemyState.Idle)
         {
@@ -152,8 +180,13 @@ public class Enemy_Movement : MonoBehaviour
         }
     }
 
-    private void OnGrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
+        if (detectionPoint == null)
+        {
+            return;
+        }
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(detectionPoint.position, playerDetectRange);
     }

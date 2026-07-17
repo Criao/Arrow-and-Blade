@@ -67,6 +67,11 @@ public class NPC_Talk : MonoBehaviour
             return;
         }
 
+        if (PauseManager.IsPaused)
+        {
+            return;
+        }
+
         DialogueManager dialogueManager = DialogueManager.Instance;
         if (dialogueManager == null)
         {

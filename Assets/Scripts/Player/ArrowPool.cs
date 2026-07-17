@@ -1,30 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 箭矢对象池，用于管理和复用箭矢对象，提高性能
-/// </summary>
 public class ArrowPool : MonoBehaviour
 {
     public static ArrowPool Instance { get; private set; }
 
-    [SerializeField] private GameObject arrowPrefab; // 箭矢预制体
-    [SerializeField] private int poolSize = 8; // 对象池初始大小
+    [SerializeField] private GameObject arrowPrefab;
+    [SerializeField] private int poolSize = 8;
 
-    private Queue<Arrow> availableArrows = new Queue<Arrow>(); // 可用箭矢队列
+    private readonly Queue<Arrow> availableArrows = new Queue<Arrow>();
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            InitializePool();
-        }
-        else
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
+            return;
         }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        InitializePool();
     }
 
     private void OnDestroy()
@@ -35,9 +31,6 @@ public class ArrowPool : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 初始化对象池，预先创建指定数量的箭矢
-    /// </summary>
     private void InitializePool()
     {
         if (arrowPrefab == null)
@@ -46,60 +39,31 @@ public class ArrowPool : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < poolSize; i++)
+        for (int i = 0; i < Mathf.Max(0, poolSize); i++)
         {
-            GameObject arrowObj = Instantiate(arrowPrefab);
-            arrowObj.SetActive(false);
-            Arrow arrow = arrowObj.GetComponent<Arrow>();
+            Arrow arrow = CreateArrow();
             if (arrow != null)
             {
                 availableArrows.Enqueue(arrow);
             }
-            else
-            {
-                Destroy(arrowObj);
-            }
         }
     }
 
-    /// <summary>
-    /// 从对象池获取箭矢
-    /// </summary>
     public Arrow GetArrow(Vector3 position, Vector2 direction)
     {
-        Arrow arrow = null;
-
-        // 从队列中获取可用箭矢
-        while (availableArrows.Count > 0)
-        {
-            arrow = availableArrows.Dequeue();
-            if (arrow != null)
-            {
-                break;
-            }
-        }
-
-        // 如果对象池耗尽，动态创建新箭矢
+        Arrow arrow = GetAvailableArrow();
         if (arrow == null)
         {
-            if (arrowPrefab == null)
-            {
-                Debug.LogError("Cannot create an arrow because ArrowPool is missing an arrow prefab.");
-                return null;
-            }
-
-            Debug.LogWarning("对象池耗尽或引用失效，动态创建箭矢");
-            GameObject arrowObj = Instantiate(arrowPrefab);
-            arrowObj.SetActive(false);
-            arrow = arrowObj.GetComponent<Arrow>();
+            arrow = CreateArrow();
         }
 
         if (arrow == null)
         {
-            Debug.LogError("Cannot get an Arrow component from the arrow prefab.");
+            Debug.LogError("Cannot get an arrow because ArrowPool is missing a valid arrow prefab.");
             return null;
         }
 
+        arrow.transform.SetParent(null);
         arrow.transform.position = position;
         arrow.gameObject.SetActive(true);
         arrow.Initialize(direction);
@@ -107,15 +71,55 @@ public class ArrowPool : MonoBehaviour
         return arrow;
     }
 
-    /// <summary>
-    /// 将箭矢返回对象池
-    /// </summary>
     public void ReturnArrow(Arrow arrow)
     {
-        if (arrow != null && arrow.gameObject != null)
+        if (arrow == null || arrow.gameObject == null)
         {
-            arrow.gameObject.SetActive(false);
+            return;
+        }
+
+        arrow.transform.SetParent(transform);
+        arrow.transform.localPosition = Vector3.zero;
+        arrow.transform.localRotation = Quaternion.identity;
+        arrow.gameObject.SetActive(false);
+
+        if (!availableArrows.Contains(arrow))
+        {
             availableArrows.Enqueue(arrow);
         }
+    }
+
+    private Arrow GetAvailableArrow()
+    {
+        while (availableArrows.Count > 0)
+        {
+            Arrow arrow = availableArrows.Dequeue();
+            if (arrow != null)
+            {
+                return arrow;
+            }
+        }
+
+        return null;
+    }
+
+    private Arrow CreateArrow()
+    {
+        if (arrowPrefab == null)
+        {
+            return null;
+        }
+
+        GameObject arrowObj = Instantiate(arrowPrefab, transform);
+        arrowObj.SetActive(false);
+
+        Arrow arrow = arrowObj.GetComponent<Arrow>();
+        if (arrow == null)
+        {
+            Debug.LogError("Cannot get an Arrow component from the arrow prefab.");
+            Destroy(arrowObj);
+        }
+
+        return arrow;
     }
 }

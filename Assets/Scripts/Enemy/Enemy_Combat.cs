@@ -19,6 +19,17 @@ public class Enemy_Combat : MonoBehaviour
     /// </summary>
     private void Attack()
     {
+       if (GameManager.IsSceneTransitionBlocked)
+       {
+           return;
+       }
+
+       if (attackPoint == null)
+       {
+           Debug.LogWarning($"{nameof(Enemy_Combat)} cannot attack because attackPoint is missing.");
+           return;
+       }
+
        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position,weaponRange,playerLayer);
        if(hits.Length > 0)
         {

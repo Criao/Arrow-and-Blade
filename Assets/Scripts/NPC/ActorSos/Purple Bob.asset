@@ -14,3 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   actorName: Purple Bob
   portrait: {fileID: -916365002, guid: 3e31e59ce71309346ac25435563ef5ba, type: 3}
+  isPlayerActor: 0
+  voiceClipName: npc_talk_blip_01
+  voiceVolume: 0.55

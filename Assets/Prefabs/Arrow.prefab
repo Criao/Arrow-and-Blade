@@ -185,6 +185,3 @@ MonoBehaviour:
   buriedSprite: {fileID: 21300000, guid: f993780586a721643a73104dfa9eaa89, type: 3}
   originalSprite: {fileID: 21300000, guid: 8aa4b443bd3e612408625511ed1b7fe9, type: 3}
   damage: 2
-  knockbackForce: 10
-  knockbackTime: 0.5
-  stunTime: 1

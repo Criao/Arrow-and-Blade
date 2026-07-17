@@ -14,3 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   actorName: Night Runner
   portrait: {fileID: -230597563, guid: 9bf4e69ea7f2b1c49aeb6b0ead0c0545, type: 3}
+  isPlayerActor: 1
+  voiceClipName: 
+  voiceVolume: 0

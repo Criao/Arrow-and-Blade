@@ -34,6 +34,11 @@ public class Player_Bow : MonoBehaviour
 
     private void Update()
     {
+        if (PauseManager.IsPaused)
+        {
+            return;
+        }
+
         if (ShootTimer > 0f)
         {
             ShootTimer -= Time.deltaTime;
@@ -105,14 +110,15 @@ public class Player_Bow : MonoBehaviour
             return;
         }
 
+        if (playerMoveMent == null || !playerMoveMent.StateController.TryStartBowShot())
+        {
+            return;
+        }
+
         lockedAimDirection = aimDirection;
         isShotStateActive = true;
         shootStateTimer = 0f;
-
-        if (playerMoveMent != null)
-        {
-            playerMoveMent.SetShooting(true);
-        }
+        playerMoveMent.SetShooting(true);
 
         anim.SetBool("isShooting", true);
     }
@@ -135,8 +141,9 @@ public class Player_Bow : MonoBehaviour
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
+        bool shooting = playerMoveMent != null && playerMoveMent.CurrentState == PlayerState.BowShooting;
 
-        if (horizontal != 0f || vertical != 0f)
+        if (!shooting && (horizontal != 0f || vertical != 0f))
         {
             aimDirection = new Vector2(horizontal, vertical).normalized;
         }
@@ -148,8 +155,8 @@ public class Player_Bow : MonoBehaviour
 
         anim.SetFloat("aimX", aimDirection.x);
         anim.SetFloat("aimY", aimDirection.y);
-        anim.SetFloat("horizontal", Mathf.Abs(horizontal));
-        anim.SetFloat("vertical", Mathf.Abs(vertical));
+        anim.SetFloat("horizontal", shooting ? 0f : Mathf.Abs(horizontal));
+        anim.SetFloat("vertical", shooting ? 0f : Mathf.Abs(vertical));
     }
 
     private void SetBowLayer(bool active)
@@ -165,6 +172,13 @@ public class Player_Bow : MonoBehaviour
 
     public void Shoot()
     {
+        if (!isShotStateActive ||
+            playerMoveMent == null ||
+            playerMoveMent.CurrentState != PlayerState.BowShooting)
+        {
+            return;
+        }
+
         if (ShootTimer <= 0f)
         {
             if (ArrowPool.Instance != null && launchPoint != null)

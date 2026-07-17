@@ -10,6 +10,7 @@ public class Enemy_Health : MonoBehaviour
     public static event MonsterDefeated OnMonsterDefeateds;
 
     private bool isDead;
+    public bool IsDead => isDead;
 
     private void Start()
     {
@@ -21,6 +22,11 @@ public class Enemy_Health : MonoBehaviour
         if (isDead)
         {
             return;
+        }
+
+        if (amount < 0)
+        {
+            HitFeedbackAudio.PlayEnemyHit(transform.position);
         }
 
         currentHealth += amount;

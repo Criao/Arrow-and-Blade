@@ -9,11 +9,21 @@ public class Enemy_Knockback : MonoBehaviour
 {
     private Rigidbody2D rb;
     private Enemy_Movement enemy_Movement;
+    private Coroutine stunRoutine;
 
-    private void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         enemy_Movement = GetComponent<Enemy_Movement>();
+    }
+
+    private void OnDisable()
+    {
+        if (stunRoutine != null)
+        {
+            StopCoroutine(stunRoutine);
+            stunRoutine = null;
+        }
     }
 
     /// <summary>
@@ -25,10 +35,20 @@ public class Enemy_Knockback : MonoBehaviour
     /// <param name="stunTime">眩晕时间</param>
     public void KnockBack(Transform forceTransform,float knockbackForce,float knockbackTime,float stunTime)
     {
+        if (forceTransform == null || rb == null || enemy_Movement == null)
+        {
+            return;
+        }
+
+        if (stunRoutine != null)
+        {
+            StopCoroutine(stunRoutine);
+        }
+
         enemy_Movement.ChangeState(EnemyState.Knockback);
-        StartCoroutine(StunTime(knockbackTime,stunTime));
         Vector2 direction = (transform.position - forceTransform.position).normalized;
         rb.velocity = direction * knockbackForce;
+        stunRoutine = StartCoroutine(StunTime(knockbackTime,stunTime));
     }
 
     /// <summary>
@@ -40,5 +60,6 @@ public class Enemy_Knockback : MonoBehaviour
         rb.velocity = Vector2.zero;
         yield return new WaitForSeconds(stunTime);
         enemy_Movement.ChangeState(EnemyState.Idle);
+        stunRoutine = null;
     }
 }

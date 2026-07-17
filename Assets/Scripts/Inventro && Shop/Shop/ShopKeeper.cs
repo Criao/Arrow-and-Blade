@@ -41,6 +41,10 @@ public class ShopKeeper : MonoBehaviour
         {
             CloseShop();
         }
+        else if (PauseManager.IsPaused)
+        {
+            return;
+        }
         else
         {
             OpenShop();

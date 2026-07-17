@@ -6,8 +6,13 @@ public class StatsUI : MonoBehaviour
     [SerializeField] private GameObject[] statsSlots;
     [SerializeField] private CanvasGroup statsCanvas;
 
-    private const string PauseOwner = nameof(StatsUI);
+    private string pauseOwner;
     private bool statsOpen;
+
+    private void Awake()
+    {
+        pauseOwner = $"{nameof(StatsUI)}:{GetInstanceID()}";
+    }
 
     private void Start()
     {
@@ -26,6 +31,10 @@ public class StatsUI : MonoBehaviour
         {
             CloseStatsPanel();
         }
+        else if (PauseManager.IsPaused)
+        {
+            return;
+        }
         else
         {
             OpenStatsPanel();
@@ -37,7 +46,7 @@ public class StatsUI : MonoBehaviour
         if (statsOpen)
         {
             statsOpen = false;
-            PauseManager.SetPaused(PauseOwner, false);
+            PauseManager.SetPaused(pauseOwner, false);
         }
     }
 
@@ -45,7 +54,7 @@ public class StatsUI : MonoBehaviour
     {
         statsOpen = true;
         SetCanvasVisible(true);
-        PauseManager.SetPaused(PauseOwner, true);
+        PauseManager.SetPaused(pauseOwner, true);
     }
 
     private void CloseStatsPanel()
@@ -53,7 +62,7 @@ public class StatsUI : MonoBehaviour
         statsOpen = false;
         UpdateAllStats();
         SetCanvasVisible(false);
-        PauseManager.SetPaused(PauseOwner, false);
+        PauseManager.SetPaused(pauseOwner, false);
     }
 
     private void SetCanvasVisible(bool visible)

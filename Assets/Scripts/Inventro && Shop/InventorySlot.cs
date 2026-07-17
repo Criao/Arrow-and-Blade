@@ -54,7 +54,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
         }
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
-            inventoryManager?.DropItem(this);
+            HandleRightClick();
         }
     }
 
@@ -97,14 +97,19 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
 
     private void HandleLeftClick()
     {
+        if (inventoryManager == null)
+        {
+            inventoryManager = GetComponentInParent<InventoryManager>();
+        }
+
+        inventoryManager?.UseItem(this);
+    }
+
+    private void HandleRightClick()
+    {
         if (activeShop != null)
         {
-            if (activeShop.SellItem(itemSo))
-            {
-                quantity--;
-                UpdateUI();
-            }
-
+            SellCurrentItem();
             return;
         }
 
@@ -113,6 +118,17 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
             inventoryManager = GetComponentInParent<InventoryManager>();
         }
 
-        inventoryManager?.UseItem(this);
+        inventoryManager?.DropItem(this);
+    }
+
+    private void SellCurrentItem()
+    {
+        if (activeShop == null || !activeShop.SellItem(itemSo))
+        {
+            return;
+        }
+
+        quantity--;
+        UpdateUI();
     }
 }

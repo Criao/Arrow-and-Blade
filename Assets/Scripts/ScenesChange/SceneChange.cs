@@ -7,6 +7,10 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class SceneChange : MonoBehaviour
 {
+    [SerializeField] private float triggerReentryCooldown = 3f;
+
+    private static float triggerBlockedUntil;
+
     [SerializeField] private string sceneToLoad; // 要加载的场景名称
     [SerializeField] private Animator fadeAnimator; // 淡入淡出动画控制器
     [SerializeField] private float fadeTime = 0.5f; // 淡入淡出时间
@@ -29,6 +33,11 @@ public class SceneChange : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
+            if (GameManager.IsSceneTransitionBlocked || Time.unscaledTime < triggerBlockedUntil)
+            {
+                return;
+            }
+
             // 检查是否有任务进行中
             if (QuestManager.Instance != null && QuestManager.Instance.HasActiveQuest())
             {
@@ -38,13 +47,20 @@ public class SceneChange : MonoBehaviour
 
             if (GameManager.instance != null)
             {
+                BlockSceneTrigger();
                 GameManager.instance.StartFade(sceneToLoad, newPlayerPosition, collision.transform);
             }
             else
             {
+                BlockSceneTrigger();
                 StartCoroutine(DelayFade(collision.transform));
             }
         }
+    }
+
+    private void BlockSceneTrigger()
+    {
+        triggerBlockedUntil = Time.unscaledTime + Mathf.Max(0.1f, triggerReentryCooldown);
     }
 
     /// <summary>
@@ -64,16 +80,17 @@ public class SceneChange : MonoBehaviour
 
         yield return new WaitForSeconds(fadeTime);
 
-        if (targetPlayer != null)
-        {
-            targetPlayer.position = newPlayerPosition;
-        }
-
         if (fadeCanvasGroup != null)
         {
             fadeCanvasGroup.blocksRaycasts = false;
         }
 
         SceneManager.LoadScene(sceneToLoad);
+
+        if (targetPlayer != null)
+        {
+            targetPlayer.position = newPlayerPosition;
+            Physics2D.SyncTransforms();
+        }
     }
 }

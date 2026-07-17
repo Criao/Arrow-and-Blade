@@ -37,6 +37,11 @@ public class PlayerChangeEquipment : MonoBehaviour
 
     private void Update()
     {
+        if (PauseManager.IsPaused)
+        {
+            return;
+        }
+
         if (Input.GetButtonDown("ChangeEquipment"))
         {
             bool bowMode = bow != null && !bow.enabled;
@@ -47,6 +52,11 @@ public class PlayerChangeEquipment : MonoBehaviour
     private void ApplyMode(bool bowMode)
     {
         ClearCombatState();
+
+        if (movement != null)
+        {
+            movement.SetEquipmentMode(bowMode);
+        }
 
         if (combat != null)
         {

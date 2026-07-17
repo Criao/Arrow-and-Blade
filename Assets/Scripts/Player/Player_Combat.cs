@@ -8,12 +8,22 @@ public class Player_Combat : MonoBehaviour
     [SerializeField] private Transform attackPoint;
     [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private StatsUI statsUI;
+    [SerializeField] private PlayerMoveMent movement;
+    [SerializeField] private float attackStateTimeout = 1.2f;
+
+    private bool isAttackStateActive;
+    private float attackStateTimer;
 
     private void Awake()
     {
         if (animator == null)
         {
             animator = GetComponent<Animator>();
+        }
+
+        if (movement == null)
+        {
+            movement = GetComponent<PlayerMoveMent>();
         }
     }
 
@@ -22,6 +32,15 @@ public class Player_Combat : MonoBehaviour
         if (timer > 0f)
         {
             timer -= Time.deltaTime;
+        }
+
+        if (isAttackStateActive)
+        {
+            attackStateTimer += Time.deltaTime;
+            if (attackStateTimer >= Mathf.Max(0.1f, attackStateTimeout))
+            {
+                CancelAttack();
+            }
         }
     }
 
@@ -37,20 +56,40 @@ public class Player_Combat : MonoBehaviour
             return;
         }
 
+        if (movement != null && !movement.StateController.TryStartMeleeAttack())
+        {
+            return;
+        }
+
+        isAttackStateActive = true;
+        attackStateTimer = 0f;
         animator.SetBool("isAttacking", true);
         timer = coolDown;
     }
 
     public void CancelAttack()
     {
+        isAttackStateActive = false;
+        attackStateTimer = 0f;
+
         if (animator != null)
         {
             animator.SetBool("isAttacking", false);
+        }
+
+        if (movement != null)
+        {
+            movement.StateController.FinishMeleeAttack();
         }
     }
 
     private void DealDamage()
     {
+        if (!isAttackStateActive)
+        {
+            return;
+        }
+
         StatsManager stats = StatsManager.Instance;
         if (stats == null || attackPoint == null)
         {

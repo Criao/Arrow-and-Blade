@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +26,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+            gameObject.SetActive(false);
             Destroy(gameObject);
             return;
         }
@@ -159,6 +161,7 @@ public class DialogueManager : MonoBehaviour
             dialogueText.text = line.text;
         }
 
+        DialogueAudio.PlaySpeaker(line.speaker);
         dialogueIndex++;
     }
 
@@ -215,5 +218,66 @@ public class DialogueManager : MonoBehaviour
         {
             obj.SetActive(false);
         }
+    }
+}
+
+public static class DialogueAudio
+{
+    private const string ResourceRoot = "Audio/SFX/Dialogue/";
+    private const string DefaultNpcClipName = "npc_talk_blip_01";
+
+    private static readonly Dictionary<string, AudioClip> Clips = new Dictionary<string, AudioClip>();
+
+    public static void PlaySpeaker(ActorSo speaker)
+    {
+        if (speaker == null || speaker.isPlayerActor)
+        {
+            return;
+        }
+
+        string clipName = string.IsNullOrEmpty(speaker.voiceClipName) ? DefaultNpcClipName : speaker.voiceClipName;
+        Play(clipName, speaker.voiceVolume);
+    }
+
+    private static void Play(string clipName, float volume)
+    {
+        if (string.IsNullOrEmpty(clipName) || volume <= 0f)
+        {
+            return;
+        }
+
+        AudioClip clip = LoadClip(clipName);
+        if (clip == null)
+        {
+            return;
+        }
+
+        GameObject audioObject = new GameObject("OneShot Dialogue - " + clipName);
+        AudioSource source = audioObject.AddComponent<AudioSource>();
+        source.clip = clip;
+        source.volume = Mathf.Clamp01(volume);
+        source.spatialBlend = 0f;
+        source.playOnAwake = false;
+        source.Play();
+
+        Object.Destroy(audioObject, clip.length + 0.1f);
+    }
+
+    private static AudioClip LoadClip(string clipName)
+    {
+        if (Clips.TryGetValue(clipName, out AudioClip cachedClip))
+        {
+            return cachedClip;
+        }
+
+        AudioClip clip = Resources.Load<AudioClip>(ResourceRoot + clipName);
+        Clips[clipName] = clip;
+
+        if (clip == null)
+        {
+            Debug.LogWarning("Missing dialogue audio clip: " + ResourceRoot + clipName);
+        }
+
+        return clip;
     }
 }

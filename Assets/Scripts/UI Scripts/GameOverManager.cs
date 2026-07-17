@@ -8,6 +8,9 @@ public class GameOverManager : MonoBehaviour
 {
     public static GameOverManager Instance;
     private const string PauseOwner = nameof(GameOverManager);
+    private const string ButtonSpritePath = "UI/Button_Blue_9Slides";
+    private const string BangersFontPath = "Fonts & Materials/Bangers SDF";
+    private const string BangersDropShadowMaterialPath = "Fonts & Materials/Bangers SDF - Drop Shadow";
 
     [Header("Game Over UI")]
     public GameObject gameOverPanel;
@@ -23,6 +26,17 @@ public class GameOverManager : MonoBehaviour
     private GameObject player;
     private Vector3 playerStartPosition;
     private bool hasPlayerStartPosition;
+    private PanelMode currentMode = PanelMode.Hidden;
+    private static Sprite cachedButtonSprite;
+    private static TMP_FontAsset cachedBangersFont;
+    private static Material cachedBangersDropShadowMaterial;
+
+    private enum PanelMode
+    {
+        Hidden,
+        Pause,
+        GameOver
+    }
 
     public static GameOverManager EnsureInstance()
     {
@@ -68,6 +82,7 @@ public class GameOverManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+            gameObject.SetActive(false);
             Destroy(gameObject);
             return;
         }
@@ -80,6 +95,32 @@ public class GameOverManager : MonoBehaviour
     {
         EnsureReady();
         HideGameOverPanel();
+    }
+
+    private void Update()
+    {
+        if (!Input.GetKeyDown(KeyCode.Escape))
+        {
+            return;
+        }
+
+        if (currentMode == PanelMode.GameOver)
+        {
+            return;
+        }
+
+        if (currentMode == PanelMode.Pause)
+        {
+            HidePausePanel();
+            return;
+        }
+
+        if (PauseManager.IsPaused)
+        {
+            return;
+        }
+
+        ShowPause();
     }
 
     private void OnDestroy()
@@ -113,7 +154,28 @@ public class GameOverManager : MonoBehaviour
             return;
         }
 
+        currentMode = PanelMode.GameOver;
+        SetPanelText("Game Over", "Continue", "Quit");
         ActivateHierarchy(gameOverPanel.transform);
+        EnsureFullscreenDimmer();
+        gameOverPanel.SetActive(true);
+        PauseManager.SetPaused(PauseOwner, true);
+    }
+
+    public void ShowPause()
+    {
+        EnsureReady();
+
+        if (gameOverPanel == null)
+        {
+            Debug.LogError("Pause panel is missing and could not be created.");
+            return;
+        }
+
+        currentMode = PanelMode.Pause;
+        SetPanelText("Pause", "Continue", "Exit");
+        ActivateHierarchy(gameOverPanel.transform);
+        EnsureFullscreenDimmer();
         gameOverPanel.SetActive(true);
         PauseManager.SetPaused(PauseOwner, true);
     }
@@ -200,31 +262,43 @@ public class GameOverManager : MonoBehaviour
         panelRect.offsetMax = Vector2.zero;
 
         Image panelImage = gameOverPanel.GetComponent<Image>();
-        panelImage.color = new Color(0f, 0f, 0f, 0.82f);
+        panelImage.color = new Color(0f, 0f, 0f, 0f);
+
+        GameObject titleBackdrop = CreateUIObject("TitleBackdrop", gameOverPanel.transform, typeof(Image));
+        RectTransform titleBackdropRect = titleBackdrop.GetComponent<RectTransform>();
+        titleBackdropRect.anchorMin = new Vector2(0.5f, 0.5f);
+        titleBackdropRect.anchorMax = new Vector2(0.5f, 0.5f);
+        titleBackdropRect.pivot = new Vector2(0.5f, 0.5f);
+        titleBackdropRect.anchoredPosition = new Vector2(0f, 245f);
+        titleBackdropRect.sizeDelta = new Vector2(760f, 150f);
+
+        Image titleBackdropImage = titleBackdrop.GetComponent<Image>();
+        titleBackdropImage.color = new Color(0f, 0f, 0f, 0.5f);
 
         gameOverText = CreateText(
             "GameOverText",
             gameOverPanel.transform,
             "Game Over",
-            72f,
-            FontStyles.Bold,
+            108f,
+            FontStyles.Normal,
             new Vector2(0.5f, 0.5f),
-            new Vector2(0f, 145f),
-            new Vector2(760f, 120f));
+            new Vector2(0f, 245f),
+            new Vector2(820f, 160f));
+        ApplyBangersFont(gameOverText, true);
 
         continueButton = CreateButton(
             "ContinueButton",
             gameOverPanel.transform,
             "Continue",
             new Vector2(0.5f, 0.5f),
-            new Vector2(0f, -35f));
+            new Vector2(0f, -30f));
 
         quitButton = CreateButton(
             "QuitButton",
             gameOverPanel.transform,
             "Quit",
             new Vector2(0.5f, 0.5f),
-            new Vector2(0f, -135f));
+            new Vector2(0f, -235f));
 
         gameOverPanel.SetActive(false);
     }
@@ -281,18 +355,33 @@ public class GameOverManager : MonoBehaviour
         buttonRect.anchorMax = anchor;
         buttonRect.pivot = new Vector2(0.5f, 0.5f);
         buttonRect.anchoredPosition = anchoredPosition;
-        buttonRect.sizeDelta = new Vector2(280f, 70f);
+        buttonRect.sizeDelta = new Vector2(450f, 135f);
 
         Image buttonImage = buttonObject.GetComponent<Image>();
-        buttonImage.color = new Color(0.18f, 0.22f, 0.28f, 1f);
+        Sprite buttonSprite = GetButtonSprite();
+        if (buttonSprite != null)
+        {
+            buttonImage.sprite = buttonSprite;
+            buttonImage.type = Image.Type.Sliced;
+            buttonImage.color = Color.white;
+        }
+        else
+        {
+            buttonImage.color = new Color(0.72f, 0.84f, 0.88f, 1f);
+
+            Outline buttonOutline = buttonObject.AddComponent<Outline>();
+            buttonOutline.effectColor = new Color(0.12f, 0.14f, 0.18f, 0.95f);
+            buttonOutline.effectDistance = new Vector2(4f, -4f);
+        }
 
         Button button = buttonObject.GetComponent<Button>();
         button.targetGraphic = buttonImage;
 
         ColorBlock colors = button.colors;
-        colors.normalColor = new Color(0.18f, 0.22f, 0.28f, 1f);
-        colors.highlightedColor = new Color(0.28f, 0.34f, 0.43f, 1f);
-        colors.pressedColor = new Color(0.11f, 0.14f, 0.18f, 1f);
+        colors.normalColor = Color.white;
+        colors.highlightedColor = new Color(0.96f, 0.96f, 0.96f, 1f);
+        colors.pressedColor = new Color(0.78f, 0.78f, 0.78f, 1f);
+        colors.disabledColor = new Color(0.78f, 0.78f, 0.78f, 0.5f);
         colors.selectedColor = colors.highlightedColor;
         button.colors = colors;
 
@@ -300,36 +389,81 @@ public class GameOverManager : MonoBehaviour
             objectName + "Text",
             buttonObject.transform,
             label,
-            30f,
-            FontStyles.Bold,
+            44f,
+            FontStyles.Normal,
             new Vector2(0.5f, 0.5f),
             Vector2.zero,
             buttonRect.sizeDelta);
+        buttonText.color = new Color(0.196f, 0.196f, 0.196f, 1f);
+        ApplyBangersFont(buttonText, false);
         buttonText.raycastTarget = false;
 
         return button;
     }
 
+    private static Sprite GetButtonSprite()
+    {
+        if (cachedButtonSprite == null)
+        {
+            cachedButtonSprite = Resources.Load<Sprite>(ButtonSpritePath);
+        }
+
+        return cachedButtonSprite;
+    }
+
+    private static TMP_FontAsset GetBangersFont()
+    {
+        if (cachedBangersFont == null)
+        {
+            cachedBangersFont = Resources.Load<TMP_FontAsset>(BangersFontPath);
+        }
+
+        return cachedBangersFont;
+    }
+
+    private static Material GetBangersDropShadowMaterial()
+    {
+        if (cachedBangersDropShadowMaterial == null)
+        {
+            cachedBangersDropShadowMaterial = Resources.Load<Material>(BangersDropShadowMaterialPath);
+        }
+
+        return cachedBangersDropShadowMaterial;
+    }
+
+    private static void ApplyBangersFont(TMP_Text text, bool useDropShadow)
+    {
+        if (text == null)
+        {
+            return;
+        }
+
+        TMP_FontAsset font = GetBangersFont();
+        if (font != null)
+        {
+            text.font = font;
+        }
+
+        if (useDropShadow)
+        {
+            Material dropShadowMaterial = GetBangersDropShadowMaterial();
+            if (dropShadowMaterial != null)
+            {
+                text.fontSharedMaterial = dropShadowMaterial;
+            }
+        }
+    }
+
     private void EnsureEventSystem()
     {
-        EventSystem[] eventSystems = Resources.FindObjectsOfTypeAll<EventSystem>();
-        for (int i = 0; i < eventSystems.Length; i++)
+        if (EventSystemResolver.EnsureSingleActiveEventSystem())
         {
-            EventSystem eventSystem = eventSystems[i];
-            if (eventSystem == null)
-            {
-                continue;
-            }
-
-            Scene scene = eventSystem.gameObject.scene;
-            if (scene.IsValid() && scene.isLoaded)
-            {
-                return;
-            }
+            return;
         }
 
         GameObject eventSystemObject = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
         MoveToManagerScene(eventSystemObject);
+        EventSystemResolver.EnsureSingleActiveEventSystem();
     }
 
     private void BindButtonEvents()
@@ -353,6 +487,101 @@ public class GameOverManager : MonoBehaviour
         {
             gameOverPanel.SetActive(false);
         }
+
+        SetFullscreenDimmerVisible(false);
+        currentMode = PanelMode.Hidden;
+    }
+
+    private void HidePausePanel()
+    {
+        if (currentMode != PanelMode.Pause)
+        {
+            return;
+        }
+
+        PauseManager.SetPaused(PauseOwner, false);
+        HideGameOverPanel();
+    }
+
+    private void SetPanelText(string title, string continueLabel, string quitLabel)
+    {
+        if (gameOverText != null)
+        {
+            gameOverText.text = title;
+        }
+
+        SetButtonLabel(continueButton, continueLabel);
+        SetButtonLabel(quitButton, quitLabel);
+    }
+
+    private void SetButtonLabel(Button button, string label)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        TMP_Text buttonText = button.GetComponentInChildren<TMP_Text>(true);
+        if (buttonText != null)
+        {
+            buttonText.text = label;
+        }
+    }
+
+    private void EnsureFullscreenDimmer()
+    {
+        if (gameOverPanel == null)
+        {
+            return;
+        }
+
+        Transform dimmerParent = gameOverPanel.transform.parent != null
+            ? gameOverPanel.transform.parent
+            : gameOverPanel.transform;
+
+        Transform existingDimmer = dimmerParent.Find("FullscreenDimmer");
+        if (existingDimmer != null)
+        {
+            Image existingImage = existingDimmer.GetComponent<Image>();
+            if (existingImage != null)
+            {
+                existingImage.color = new Color(0f, 0f, 0f, 0.58f);
+            }
+
+            existingDimmer.gameObject.SetActive(true);
+            existingDimmer.SetAsFirstSibling();
+            return;
+        }
+
+        GameObject dimmer = CreateUIObject("FullscreenDimmer", dimmerParent, typeof(Image));
+        RectTransform dimmerRect = dimmer.GetComponent<RectTransform>();
+        dimmerRect.anchorMin = Vector2.zero;
+        dimmerRect.anchorMax = Vector2.one;
+        dimmerRect.offsetMin = Vector2.zero;
+        dimmerRect.offsetMax = Vector2.zero;
+
+        Image dimmerImage = dimmer.GetComponent<Image>();
+        dimmerImage.color = new Color(0f, 0f, 0f, 0.58f);
+        dimmerImage.raycastTarget = false;
+        dimmer.transform.SetAsFirstSibling();
+    }
+
+    private void SetFullscreenDimmerVisible(bool visible)
+    {
+        if (gameOverPanel == null)
+        {
+            return;
+        }
+
+        Transform dimmerParent = gameOverPanel.transform.parent != null
+            ? gameOverPanel.transform.parent
+            : gameOverPanel.transform;
+
+        Transform existingDimmer = dimmerParent.Find("FullscreenDimmer");
+        if (existingDimmer != null)
+        {
+            existingDimmer.gameObject.SetActive(visible);
+        }
     }
 
     private void ActivateHierarchy(Transform target)
@@ -373,6 +602,13 @@ public class GameOverManager : MonoBehaviour
     private void OnContinueClicked()
     {
         PauseManager.SetPaused(PauseOwner, false);
+
+        if (currentMode == PanelMode.Pause)
+        {
+            HideGameOverPanel();
+            return;
+        }
+
         HideGameOverPanel();
         RespawnPlayer();
     }
@@ -408,6 +644,12 @@ public class GameOverManager : MonoBehaviour
             : respawnPosition;
         player.transform.position = targetPosition;
 
+        PlayerMoveMent movement = player.GetComponent<PlayerMoveMent>();
+        if (movement != null)
+        {
+            movement.Revive();
+        }
+
         if (StatsManager.Instance != null)
         {
             int clampedPercent = Mathf.Clamp(respawnHealthPercent, 1, 100);
@@ -418,6 +660,7 @@ public class GameOverManager : MonoBehaviour
         PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
         if (playerHealth != null)
         {
+            playerHealth.ResetDeathState();
             playerHealth.UpdateHealthUI();
         }
     }

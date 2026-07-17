@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// 玩家属性管理器，管理玩家的战斗、移动和生命属性
@@ -38,8 +39,24 @@ public class StatsManager : MonoBehaviour
         }
         else if (Instance != this)
         {
+            gameObject.SetActive(false);
             Destroy(gameObject);
         }
+    }
+
+    private void Start()
+    {
+        RefreshUI();
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void OnDestroy()
@@ -48,6 +65,11 @@ public class StatsManager : MonoBehaviour
         {
             Instance = null;
         }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshUI();
     }
 
     /// <summary>
@@ -67,7 +89,11 @@ public class StatsManager : MonoBehaviour
     {
         CurrentHealth += amount;
         UpdateHealthText();
-        HandleDeathIfNeeded();
+
+        if (PlayerHealth.ActiveInstance != null)
+        {
+            PlayerHealth.ActiveInstance.HandleHealthChanged(amount);
+        }
     }
 
     /// <summary>
@@ -141,6 +167,7 @@ public class StatsManager : MonoBehaviour
         set
         {
             currentHealth = Mathf.Clamp(value, 0, maxHealth);
+            UpdateHealthText();
         }
     }
 
@@ -152,9 +179,49 @@ public class StatsManager : MonoBehaviour
 
     private void UpdateHealthText()
     {
+        EnsureHealthTextReference();
+
         if (healthText != null)
         {
             healthText.text = "HP:" + currentHealth + "/" + maxHealth;
+        }
+    }
+
+    private void RefreshUI()
+    {
+        UpdateHealthText();
+        UpdateStatsUI();
+
+        if (PlayerHealth.ActiveInstance != null)
+        {
+            PlayerHealth.ActiveInstance.UpdateHealthUI();
+        }
+    }
+
+    private void EnsureHealthTextReference()
+    {
+        if (healthText != null)
+        {
+            return;
+        }
+
+        TMP_Text[] texts = Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (TMP_Text text in texts)
+        {
+            if (text != null && text.gameObject.name == "HP Text")
+            {
+                healthText = text;
+                return;
+            }
+        }
+
+        foreach (TMP_Text text in texts)
+        {
+            if (text != null && text.text.StartsWith("HP:"))
+            {
+                healthText = text;
+                return;
+            }
         }
     }
 
@@ -163,22 +230,6 @@ public class StatsManager : MonoBehaviour
         if (statsUI != null)
         {
             statsUI.UpdateAllStats();
-        }
-    }
-
-    private void HandleDeathIfNeeded()
-    {
-        if (currentHealth > 0)
-        {
-            return;
-        }
-
-        GameOverManager.EnsureInstance().ShowGameOver();
-
-        GameObject player = GameObject.FindGameObjectWithTag("Player");
-        if (player != null)
-        {
-            player.SetActive(false);
         }
     }
 

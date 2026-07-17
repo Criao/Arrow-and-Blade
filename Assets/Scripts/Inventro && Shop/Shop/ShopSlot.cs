@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ShopSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
+public class ShopSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
 {
     [SerializeField] private ItemSo itemSo;
     public ItemSo ItemSo => itemSo;
@@ -17,6 +17,19 @@ public class ShopSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
     private int stock;
     public int Price => price;
+
+    private void Awake()
+    {
+        if (shopManager == null)
+        {
+            shopManager = GetComponentInParent<ShopManager>();
+        }
+
+        if (shopInfo == null)
+        {
+            shopInfo = GetComponentInParent<ShopInfo>();
+        }
+    }
 
     public void Initialize(ItemSo newItemSo, int price)
     {
@@ -79,6 +92,7 @@ public class ShopSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         if (shopManager == null || itemSo == null)
         {
+            Debug.LogWarning($"{nameof(ShopSlot)} cannot buy because shopManager or itemSo is missing.");
             return;
         }
 
@@ -147,5 +161,15 @@ public class ShopSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             shopInfo.FollowMouse();
         }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData == null || eventData.button != PointerEventData.InputButton.Left)
+        {
+            return;
+        }
+
+        OnBuyButtonClicked();
     }
 }
