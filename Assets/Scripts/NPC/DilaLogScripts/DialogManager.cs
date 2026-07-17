@@ -1,188 +1,219 @@
-
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
-/// <summary>
-/// 对话管理器，管理对话的显示、推进和结束
-/// </summary>
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
+
     [Header("UI References")]
-    public Image portrait; // 角色头像
-    public TMP_Text actorName; // 角色名称
-    public TMP_Text dialogueText; // 对话文本
-    public GameObject dialoguePanel; // 对话面板
-    public bool isDilaogueActive; // 对话是否激活
+    public Image portrait;
+    public TMP_Text actorName;
+    public TMP_Text dialogueText;
+    public GameObject dialoguePanel;
+    public bool isDilaogueActive;
 
     [Header("Quest System")]
-    public Accept acceptScript; // Accept脚本引用
+    public Accept acceptScript;
 
-    private DialogueSO currentDialogue; // 当前对话数据
-    private int dialogueIndex; // 当前对话索引
+    private DialogueSO currentDialogue;
+    private int dialogueIndex;
+    private CanvasGroup canvasGroup;
 
-    /// <summary>
-    /// 初始化单例，跨场景保留
-    /// </summary>
     private void Awake()
     {
-        Debug.Log("DialogueManager Awake 被调用");
-
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-            Debug.Log("DialogueManager Instance 已设置");
-        }
-        else
-        {
-            Debug.LogWarning("场景中已存在DialogueManager，销毁重复的对象");
             Destroy(gameObject);
             return;
         }
 
-        // 确保 DialogCanvas 始终激活
-        gameObject.SetActive(true);
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
 
-        // 永远不禁用 DialogCanvas，只控制 CanvasGroup 透明度
-        CanvasGroup cg = GetComponent<CanvasGroup>();
-        if (cg != null)
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
         {
-            cg.alpha = 0;
-            cg.interactable = false;
-            cg.blocksRaycasts = false;
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
         }
 
+        HideCanvas();
+
         if (dialoguePanel != null)
+        {
             dialoguePanel.SetActive(false);
+        }
     }
 
-    /// <summary>
-    /// 开始对话
-    /// </summary>
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public void StartDialogue(DialogueSO dialogueSO)
     {
+        if (!IsDialogueValid(dialogueSO))
+        {
+            Debug.LogWarning("Cannot start dialogue because the dialogue data is missing or has no lines.");
+            EndDialogue();
+            return;
+        }
+
         currentDialogue = dialogueSO;
         dialogueIndex = 0;
         isDilaogueActive = true;
-        dialoguePanel.SetActive(true);
-        // 确保 Canvas Group 可交互
-        GetComponent<CanvasGroup>().alpha = 1;
-        GetComponent<CanvasGroup>().interactable = true;
-        GetComponent<CanvasGroup>().blocksRaycasts = true;
+
+        if (dialoguePanel != null)
+        {
+            dialoguePanel.SetActive(true);
+        }
+
+        ShowCanvas();
         ShowDialogue();
     }
 
-    /// <summary>
-    /// 推进对话到下一句
-    /// </summary>
     public void AdvanceDialogue()
     {
+        if (!isDilaogueActive || currentDialogue == null)
+        {
+            return;
+        }
+
         if (dialogueIndex < currentDialogue.lines.Length)
         {
             ShowDialogue();
+            return;
+        }
+
+        if (currentDialogue.hasQuest)
+        {
+            ShowQuestChoices();
         }
         else
         {
-            // 对话结束，检查是否有任务
-            if (currentDialogue.hasQuest)
-            {
-                ShowQuestChoices();
-            }
-            else
-            {
-                EndDialogue();
-            }
+            EndDialogue();
         }
     }
 
-    /// <summary>
-    /// 显示当前对话行
-    /// </summary>
-    private void ShowDialogue()
-    {
-        DialogueLine line = currentDialogue.lines[dialogueIndex];
-        portrait.sprite = line.speaker.portrait;
-        actorName.text = line.speaker.actorName;
-        dialogueText.text = line.text;
-        dialogueIndex++;
-    }
-
-    /// <summary>
-    /// 结束对话
-    /// </summary>
     public void EndDialogue()
     {
         isDilaogueActive = false;
 
         if (dialoguePanel != null)
-            dialoguePanel.SetActive(false);
-
-        // 隐藏选择按钮
-        if (acceptScript != null)
-            acceptScript.HideChoices();
-
-        // 隐藏对话面板，但保持Canvas Group透明度控制
-        CanvasGroup cg = GetComponent<CanvasGroup>();
-        if (cg != null)
         {
-            cg.alpha = 0;
-            cg.interactable = false;
-            cg.blocksRaycasts = false;
+            dialoguePanel.SetActive(false);
         }
 
+        if (acceptScript != null)
+        {
+            acceptScript.HideChoices();
+        }
+
+        HideCanvas();
         currentDialogue = null;
         dialogueIndex = 0;
     }
 
-    /// <summary>
-    /// 显示任务选择按钮
-    /// </summary>
-    private void ShowQuestChoices()
-    {
-        Debug.Log("尝试显示任务选择按钮");
-        if (acceptScript != null)
-        {
-            Debug.Log("Accept脚本存在，调用ShowChoices");
-            acceptScript.ShowChoices(currentDialogue);
-        }
-        else
-        {
-            Debug.LogError("Accept脚本引用为空！请在DialogueManager中拖入Accept脚本");
-        }
-    }
-
-    /// <summary>
-    /// 启动关闭动画
-    /// </summary>
     public void StartCloseAnimation(Animator anim, GameObject obj)
     {
-        if (this != null && gameObject != null)
+        if (!gameObject.activeInHierarchy)
         {
-            // 确保DialogCanvas是激活的，才能启动协程
-            if (!gameObject.activeInHierarchy)
-                gameObject.SetActive(true);
-
-            StartCoroutine(CloseAndHide(anim, obj));
+            gameObject.SetActive(true);
         }
+
+        StartCoroutine(CloseAndHide(anim, obj));
     }
 
-    /// <summary>
-    /// 播放关闭动画并隐藏对象
-    /// </summary>
+    private void ShowDialogue()
+    {
+        if (currentDialogue == null || dialogueIndex >= currentDialogue.lines.Length)
+        {
+            EndDialogue();
+            return;
+        }
+
+        DialogueLine line = currentDialogue.lines[dialogueIndex];
+        if (line == null)
+        {
+            dialogueIndex++;
+            AdvanceDialogue();
+            return;
+        }
+
+        if (portrait != null)
+        {
+            portrait.sprite = line.speaker != null ? line.speaker.portrait : null;
+        }
+
+        if (actorName != null)
+        {
+            actorName.text = line.speaker != null ? line.speaker.actorName : "";
+        }
+
+        if (dialogueText != null)
+        {
+            dialogueText.text = line.text;
+        }
+
+        dialogueIndex++;
+    }
+
+    private void ShowQuestChoices()
+    {
+        if (acceptScript == null)
+        {
+            Debug.LogError("Accept reference is missing on DialogueManager.");
+            EndDialogue();
+            return;
+        }
+
+        acceptScript.ShowChoices(currentDialogue);
+    }
+
+    private bool IsDialogueValid(DialogueSO dialogueSO)
+    {
+        return dialogueSO != null && dialogueSO.lines != null && dialogueSO.lines.Length > 0;
+    }
+
+    private void ShowCanvas()
+    {
+        if (canvasGroup == null)
+        {
+            return;
+        }
+
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    private void HideCanvas()
+    {
+        if (canvasGroup == null)
+        {
+            return;
+        }
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+    }
+
     private IEnumerator CloseAndHide(Animator anim, GameObject obj)
     {
-        // 检查对象是否存在且激活
         if (anim != null && anim.gameObject.activeInHierarchy)
         {
             anim.Play("Close");
             yield return new WaitForSeconds(0.5f);
         }
 
-        // 隐藏对象
         if (obj != null)
+        {
             obj.SetActive(false);
+        }
     }
 }

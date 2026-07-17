@@ -59,14 +59,28 @@ public class NPC : MonoBehaviour
         switch (newState)
         {
             case NPCState.Patrol:
-                npcPatrol.enabled = true;
-                npcTalk.enabled = false;
-                npcPatrol.ResumePatrol();
+                if (npcTalk != null)
+                {
+                    npcTalk.enabled = true;
+                }
+
+                if (npcPatrol != null)
+                {
+                    npcPatrol.enabled = true;
+                    npcPatrol.ResumePatrol();
+                }
                 break;
             case NPCState.Talk:
-                npcPatrol.enabled = false;
-                npcTalk.enabled = true;
-                npcPatrol.StopPatrol();
+                if (npcTalk != null)
+                {
+                    npcTalk.enabled = true;
+                }
+
+                if (npcPatrol != null)
+                {
+                    npcPatrol.StopPatrol();
+                    npcPatrol.enabled = false;
+                }
                 break;
         }
     }
