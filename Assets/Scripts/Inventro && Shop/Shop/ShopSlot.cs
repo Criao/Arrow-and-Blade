@@ -1,96 +1,151 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
+using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Drawing;
+using UnityEngine.UI;
 
-/// <summary>
-/// 商店槽位类，显示商品信息并处理购买交互
-/// </summary>
-public class ShopSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ShopSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
 {
-    [SerializeField] private ItemSo itemSo; // 商品物品数据
+    [SerializeField] private ItemSo itemSo;
     public ItemSo ItemSo => itemSo;
-    [SerializeField] private TMP_Text itemNameText; // 物品名称文本
-    [SerializeField] private TMP_Text priceText; // 价格文本
-    [SerializeField] private Image itemImage; // 物品图标
+
+    [SerializeField] private TMP_Text itemNameText;
+    [SerializeField] private TMP_Text priceText;
+    [SerializeField] private Image itemImage;
     [SerializeField] private ShopManager shopManager;
-    [SerializeField] private ShopInfo shopInfo; // 商品信息面板
-    [SerializeField] private int price; // 价格
-    private int stock; // 库存
+    [SerializeField] private ShopInfo shopInfo;
+    [SerializeField] private int price;
+
+    private int stock;
     public int Price => price;
 
-    /// <summary>
-    /// 初始化商店槽位（无库存版本）
-    /// </summary>
     public void Initialize(ItemSo newItemSo, int price)
     {
-        itemSo = newItemSo;
-        itemImage.sprite = itemSo.Icon;
-        itemNameText.text = itemSo.ItemName;
-        this.price = price;
-        priceText.text = price.ToString();
+        Initialize(newItemSo, price, int.MaxValue);
     }
 
-    /// <summary>
-    /// 购买按钮点击事件
-    /// </summary>
-    public void OnBuyButtonClicked()
-    {
-        if (shopManager == null)
-        {
-            Debug.LogError("❌ ShopSlot 的 shopManager 是 null！");
-            return;
-        }
-        shopManager.TryBuyItem(itemSo, price);
-    }
-
-    /// <summary>
-    /// 初始化商店槽位（带库存版本）
-    /// </summary>
     public void Initialize(ItemSo newItemSo, int price, int initialStock)
     {
+        if (newItemSo == null)
+        {
+            Clear();
+            return;
+        }
+
         itemSo = newItemSo;
-        itemImage.sprite = itemSo.Icon;
-        itemNameText.text = itemSo.ItemName;
-        this.price = price;
-        priceText.text = price.ToString();
-        stock = initialStock;
+        this.price = Mathf.Max(0, price);
+        stock = Mathf.Max(0, initialStock);
+
+        if (itemImage != null)
+        {
+            itemImage.sprite = itemSo.Icon;
+            itemImage.enabled = itemSo.Icon != null;
+        }
+
+        if (itemNameText != null)
+        {
+            itemNameText.text = itemSo.ItemName;
+        }
+
+        if (priceText != null)
+        {
+            priceText.text = this.price.ToString();
+        }
     }
 
-    /// <summary>
-    /// 增加库存
-    /// </summary>
+    public void Clear()
+    {
+        itemSo = null;
+        price = 0;
+        stock = 0;
+
+        if (itemImage != null)
+        {
+            itemImage.sprite = null;
+            itemImage.enabled = false;
+        }
+
+        if (itemNameText != null)
+        {
+            itemNameText.text = string.Empty;
+        }
+
+        if (priceText != null)
+        {
+            priceText.text = string.Empty;
+        }
+    }
+
+    public void OnBuyButtonClicked()
+    {
+        if (shopManager == null || itemSo == null)
+        {
+            return;
+        }
+
+        if (stock <= 0)
+        {
+            Debug.Log("Item is out of stock.");
+            return;
+        }
+
+        if (!shopManager.TryBuyItem(itemSo, price))
+        {
+            return;
+        }
+
+        if (stock != int.MaxValue)
+        {
+            stock--;
+            if (stock <= 0)
+            {
+                if (shopInfo != null)
+                {
+                    shopInfo.HandItemInfo();
+                }
+
+                gameObject.SetActive(false);
+            }
+        }
+    }
+
     public void AddStock(int amount)
     {
-        if (itemSo != null)
+        if (itemSo == null || amount <= 0)
+        {
+            return;
+        }
+
+        if (stock != int.MaxValue)
+        {
             stock += amount;
+            if (stock > 0)
+            {
+                gameObject.SetActive(true);
+            }
+        }
     }
 
-    /// <summary>
-    /// 鼠标进入时显示物品信息
-    /// </summary>
     public void OnPointerEnter(PointerEventData eventData)
     {
-        shopInfo.ShowItemInfo(itemSo);
+        if (shopInfo != null && itemSo != null)
+        {
+            shopInfo.ShowItemInfo(itemSo);
+        }
     }
 
-    /// <summary>
-    /// 鼠标离开时隐藏物品信息
-    /// </summary>
     public void OnPointerExit(PointerEventData eventData)
     {
-        shopInfo.HandItemInfo();
+        if (shopInfo != null)
+        {
+            shopInfo.HandItemInfo();
+        }
     }
 
-    /// <summary>
-    /// 鼠标移动时更新信息面板位置
-    /// </summary>
     public void OnPointerMove(PointerEventData eventData)
     {
-        if (itemSo != null)
+        if (shopInfo != null && itemSo != null)
+        {
             shopInfo.FollowMouse();
+        }
     }
 }

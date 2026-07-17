@@ -18,6 +18,7 @@ public class ArrowPool : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
             InitializePool();
         }
         else
@@ -26,17 +27,38 @@ public class ArrowPool : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     /// <summary>
     /// 初始化对象池，预先创建指定数量的箭矢
     /// </summary>
     private void InitializePool()
     {
+        if (arrowPrefab == null)
+        {
+            Debug.LogError("ArrowPool is missing an arrow prefab.");
+            return;
+        }
+
         for (int i = 0; i < poolSize; i++)
         {
             GameObject arrowObj = Instantiate(arrowPrefab);
             arrowObj.SetActive(false);
             Arrow arrow = arrowObj.GetComponent<Arrow>();
-            availableArrows.Enqueue(arrow);
+            if (arrow != null)
+            {
+                availableArrows.Enqueue(arrow);
+            }
+            else
+            {
+                Destroy(arrowObj);
+            }
         }
     }
 
@@ -60,10 +82,22 @@ public class ArrowPool : MonoBehaviour
         // 如果对象池耗尽，动态创建新箭矢
         if (arrow == null)
         {
+            if (arrowPrefab == null)
+            {
+                Debug.LogError("Cannot create an arrow because ArrowPool is missing an arrow prefab.");
+                return null;
+            }
+
             Debug.LogWarning("对象池耗尽或引用失效，动态创建箭矢");
             GameObject arrowObj = Instantiate(arrowPrefab);
             arrowObj.SetActive(false);
             arrow = arrowObj.GetComponent<Arrow>();
+        }
+
+        if (arrow == null)
+        {
+            Debug.LogError("Cannot get an Arrow component from the arrow prefab.");
+            return null;
         }
 
         arrow.transform.position = position;

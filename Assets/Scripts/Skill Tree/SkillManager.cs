@@ -24,14 +24,25 @@ public class SkillManager : MonoBehaviour
     /// </summary>
     private void HandleAbilityPointSpent(SkillSlot slot)
     {
+        if (slot == null || slot.SkillSo == null)
+        {
+            return;
+        }
+
         string skillName = slot.SkillSo.SkillName;
         switch (skillName)
         {
             case "Max Health Boost":
-                StatsManager.Instance.UpdateMaxHealth(1);
+                if (StatsManager.Instance != null)
+                {
+                    StatsManager.Instance.UpdateMaxHealth(1);
+                }
                 break;
             case "Sword Slash":
-                combat.enabled = true;
+                if (combat != null)
+                {
+                    combat.enabled = true;
+                }
                 break;
             default:
                 Debug.LogWarning("UnKown Skill: " + skillName);

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class GameOverManager : MonoBehaviour
 {
     public static GameOverManager Instance;
+    private const string PauseOwner = nameof(GameOverManager);
 
     [Header("Game Over UI")]
     public GameObject gameOverPanel;
@@ -83,6 +84,8 @@ public class GameOverManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        PauseManager.SetPaused(PauseOwner, false);
+
         if (Instance == this)
         {
             Instance = null;
@@ -112,7 +115,7 @@ public class GameOverManager : MonoBehaviour
 
         ActivateHierarchy(gameOverPanel.transform);
         gameOverPanel.SetActive(true);
-        Time.timeScale = 0f;
+        PauseManager.SetPaused(PauseOwner, true);
     }
 
     public void SetRespawnPosition(Vector3 position)
@@ -369,14 +372,14 @@ public class GameOverManager : MonoBehaviour
 
     private void OnContinueClicked()
     {
-        Time.timeScale = 1f;
+        PauseManager.SetPaused(PauseOwner, false);
         HideGameOverPanel();
         RespawnPlayer();
     }
 
     private void OnQuitClicked()
     {
-        Time.timeScale = 1f;
+        PauseManager.SetPaused(PauseOwner, false);
 
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

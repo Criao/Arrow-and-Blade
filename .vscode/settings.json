@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Arrow and Blade.sln"
+    "dotnet.defaultSolution": "Arrow-and-Blade.sln"
 }

@@ -1,69 +1,99 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 
-/// <summary>
-/// 玩家近战战斗类，处理攻击、伤害判定和冷却
-/// </summary>
 public class Player_Combat : MonoBehaviour
 {
     [SerializeField] private Animator animator;
-    [SerializeField] private float coolDown; // 攻击冷却时间
-    [SerializeField] private float timer; // 冷却计时器
-    [SerializeField] private Transform attackPoint; // 攻击判定点
-    [SerializeField] private LayerMask enemyLayer; // 敌人图层
+    [SerializeField] private float coolDown;
+    [SerializeField] private float timer;
+    [SerializeField] private Transform attackPoint;
+    [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private StatsUI statsUI;
+
+    private void Awake()
+    {
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+    }
 
     private void Update()
     {
-        if (timer > 0)
+        if (timer > 0f)
         {
             timer -= Time.deltaTime;
         }
     }
 
-    /// <summary>
-    /// 执行攻击
-    /// </summary>
+    private void OnDisable()
+    {
+        CancelAttack();
+    }
+
     public void Attack()
     {
-        if (timer <= 0)
+        if (timer > 0f || animator == null)
         {
-            animator.SetBool("isAttacking", true);
-            timer = coolDown;
+            return;
+        }
+
+        animator.SetBool("isAttacking", true);
+        timer = coolDown;
+    }
+
+    public void CancelAttack()
+    {
+        if (animator != null)
+        {
+            animator.SetBool("isAttacking", false);
         }
     }
 
-    /// <summary>
-    /// 造成伤害（由动画事件调用）
-    /// </summary>
     private void DealDamage()
     {
-        statsUI.UpdateDamage();
-        Collider2D[] enemies = Physics2D.OverlapCircleAll(attackPoint.position, StatsManager.Instance.WeaponRange, enemyLayer);
-        if (enemies.Length > 0)
+        StatsManager stats = StatsManager.Instance;
+        if (stats == null || attackPoint == null)
         {
-            enemies[0].GetComponent<Enemy_Health>().ChangeHealth(-StatsManager.Instance.Damage);
-            enemies[0].GetComponent<Enemy_Knockback>().KnockBack(transform,StatsManager.Instance.KnockbackForce,StatsManager.Instance.KnockbackTime,StatsManager.Instance.StunTime);
+            return;
+        }
+
+        if (statsUI != null)
+        {
+            statsUI.UpdateDamage();
+        }
+
+        Collider2D[] enemies = Physics2D.OverlapCircleAll(attackPoint.position, stats.WeaponRange, enemyLayer);
+        if (enemies.Length <= 0)
+        {
+            return;
+        }
+
+        Enemy_Health enemyHealth = enemies[0].GetComponent<Enemy_Health>();
+        if (enemyHealth != null)
+        {
+            enemyHealth.ChangeHealth(-stats.Damage);
+        }
+
+        Enemy_Knockback enemyKnockback = enemies[0].GetComponent<Enemy_Knockback>();
+        if (enemyKnockback != null)
+        {
+            enemyKnockback.KnockBack(transform, stats.KnockbackForce, stats.KnockbackTime, stats.StunTime);
         }
     }
 
-    /// <summary>
-    /// 结束攻击动画（由动画事件调用）
-    /// </summary>
     private void FinishAttack()
     {
-        animator.SetBool("isAttacking", false);
+        CancelAttack();
     }
 
-    /// <summary>
-    /// 在编辑器中绘制攻击范围
-    /// </summary>
     private void OnDrawGizmosSelected()
     {
-        if (attackPoint == null || StatsManager.Instance == null) return;
-        Gizmos.color  = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position,StatsManager.Instance.WeaponRange);
+        if (attackPoint == null || StatsManager.Instance == null)
+        {
+            return;
+        }
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(attackPoint.position, StatsManager.Instance.WeaponRange);
     }
 }

@@ -58,13 +58,28 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
+    private void OnDestroy()
+    {
+        if (instance == this)
+        {
+            instance = null;
+        }
+    }
+
     /// <summary>
     /// 场景加载完成时的回调
     /// </summary>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        fadeCanvasGroup.blocksRaycasts = false;
-        fadeAnimator.Play("FadeFromWhite", 0, 0.5f);
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (fadeAnimator != null)
+        {
+            fadeAnimator.Play("FadeFromWhite", 0, 0.5f);
+        }
     }
 
     /// <summary>
@@ -80,10 +95,23 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private IEnumerator FadeRoutine(string sceneToLoad, Vector2 newPlayerPosition, Transform player)
     {
-        fadeCanvasGroup.blocksRaycasts = true;
-        fadeAnimator.Play("FadeToWhite", 0, 0f);
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.blocksRaycasts = true;
+        }
+
+        if (fadeAnimator != null)
+        {
+            fadeAnimator.Play("FadeToWhite", 0, 0f);
+        }
+
         yield return new WaitForSeconds(0.5f);
-        player.position = newPlayerPosition;
+
+        if (player != null)
+        {
+            player.position = newPlayerPosition;
+        }
+
         SceneManager.LoadScene(sceneToLoad);
     }
 
@@ -92,6 +120,11 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void MarkPeristentObjects()
     {
+        if (persistentObjects == null)
+        {
+            return;
+        }
+
         foreach (GameObject obj in persistentObjects)
         {
             if (obj != null)
@@ -106,10 +139,49 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void CleanupAndDestroy()
     {
-        foreach (GameObject obj in persistentObjects)
+        if (persistentObjects != null)
         {
-            Destroy(obj);
+            foreach (GameObject obj in persistentObjects)
+            {
+                if (obj != null)
+                {
+                    Destroy(obj);
+                }
+            }
         }
+
         Destroy(gameObject);
+    }
+}
+
+public static class PauseManager
+{
+    private static readonly HashSet<string> PauseOwners = new HashSet<string>();
+
+    public static bool IsPaused => PauseOwners.Count > 0;
+
+    public static void SetPaused(string owner, bool paused)
+    {
+        if (string.IsNullOrEmpty(owner))
+        {
+            return;
+        }
+
+        if (paused)
+        {
+            PauseOwners.Add(owner);
+        }
+        else
+        {
+            PauseOwners.Remove(owner);
+        }
+
+        Time.timeScale = IsPaused ? 0f : 1f;
+    }
+
+    public static void ClearAll()
+    {
+        PauseOwners.Clear();
+        Time.timeScale = 1f;
     }
 }

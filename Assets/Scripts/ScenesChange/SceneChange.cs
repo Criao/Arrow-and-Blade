@@ -12,7 +12,6 @@ public class SceneChange : MonoBehaviour
     [SerializeField] private float fadeTime = 0.5f; // 淡入淡出时间
     [SerializeField] private Vector2 newPlayerPosition; // 玩家在新场景的位置
     [SerializeField] private CanvasGroup fadeCanvasGroup; // 淡入淡出Canvas组
-    private Transform player; // 玩家Transform
 
     /// <summary>
     /// 游戏启动时关闭遮罩拦截
@@ -28,7 +27,7 @@ public class SceneChange : MonoBehaviour
     /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Player")
+        if (collision.CompareTag("Player"))
         {
             // 检查是否有任务进行中
             if (QuestManager.Instance != null && QuestManager.Instance.HasActiveQuest())
@@ -37,18 +36,44 @@ public class SceneChange : MonoBehaviour
                 return;
             }
 
-            GameManager.instance.StartFade(sceneToLoad, newPlayerPosition, collision.transform);
+            if (GameManager.instance != null)
+            {
+                GameManager.instance.StartFade(sceneToLoad, newPlayerPosition, collision.transform);
+            }
+            else
+            {
+                StartCoroutine(DelayFade(collision.transform));
+            }
         }
     }
 
     /// <summary>
     /// 延迟淡入淡出协程
     /// </summary>
-    IEnumerator DelayFade()
+    private IEnumerator DelayFade(Transform targetPlayer)
     {
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.blocksRaycasts = true;
+        }
+
+        if (fadeAnimator != null)
+        {
+            fadeAnimator.Play("FadeToWhite", 0, 0f);
+        }
+
         yield return new WaitForSeconds(fadeTime);
-        player.position = newPlayerPosition;
-        fadeCanvasGroup.blocksRaycasts = false;
+
+        if (targetPlayer != null)
+        {
+            targetPlayer.position = newPlayerPosition;
+        }
+
+        if (fadeCanvasGroup != null)
+        {
+            fadeCanvasGroup.blocksRaycasts = false;
+        }
+
         SceneManager.LoadScene(sceneToLoad);
     }
 }

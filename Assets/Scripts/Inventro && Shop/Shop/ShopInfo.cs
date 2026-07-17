@@ -1,83 +1,109 @@
-using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-/// <summary>
-/// 商店物品信息面板，显示物品详细信息
-/// </summary>
 public class ShopInfo : MonoBehaviour
 {
-    [SerializeField] private CanvasGroup infoPanel; // 信息面板画布组
-    [SerializeField] private TMP_Text itemNameText; // 物品名称
-    [SerializeField] private TMP_Text itemDescriptionText; // 物品描述
+    [SerializeField] private CanvasGroup infoPanel;
+    [SerializeField] private TMP_Text itemNameText;
+    [SerializeField] private TMP_Text itemDescriptionText;
 
     [Header("Stat Fields")]
-    [SerializeField] private TMP_Text[] statTexts; // 属性文本数组
+    [SerializeField] private TMP_Text[] statTexts;
 
     private RectTransform infoPanelRect;
 
     private void Awake()
     {
-        infoPanelRect = GetComponent<RectTransform>();
-        infoPanel.alpha = 0;
-        infoPanel.blocksRaycasts = false;
+        infoPanelRect = infoPanel != null
+            ? infoPanel.transform as RectTransform
+            : transform as RectTransform;
+
+        HandItemInfo();
     }
 
-    /// <summary>
-    /// 显示物品信息
-    /// </summary>
     public void ShowItemInfo(ItemSo itemSo)
     {
-        infoPanel.alpha = 1;
-        infoPanel.blocksRaycasts = true;
-        itemNameText.text = itemSo.ItemName;
-        itemDescriptionText.text = itemSo.ItemDescription;
-
-        // 收集物品属性
-        List<string> stats = new List<string>();
-        if (itemSo.CurrentHealth > 0) stats.Add("Health:" + itemSo.CurrentHealth.ToString());
-        if (itemSo.Damage > 0) stats.Add("Damage:" + itemSo.Damage.ToString());
-        if (itemSo.Speed > 0) stats.Add("Speed:" + itemSo.Speed.ToString());
-        if (itemSo.Duration > 0) stats.Add("Duration:" + itemSo.Duration.ToString());
-
-        if (stats.Count <= 0)
-            return;
-
-        // 显示属性文本
-        for (int i = 0; i < statTexts.Length; i++)
+        if (itemSo == null || infoPanel == null)
         {
-            if (i < stats.Count)
-            {
-                statTexts[i].text = stats[i];
-                statTexts[i].gameObject.SetActive(true);
-            }
-            else
-            {
-                statTexts[i].gameObject.SetActive(false);
-            }
+            HandItemInfo();
+            return;
         }
+
+        infoPanel.alpha = 1f;
+        infoPanel.blocksRaycasts = true;
+
+        if (itemNameText != null)
+        {
+            itemNameText.text = itemSo.ItemName;
+        }
+
+        if (itemDescriptionText != null)
+        {
+            itemDescriptionText.text = itemSo.ItemDescription;
+        }
+
+        List<string> stats = new List<string>();
+        if (itemSo.CurrentHealth > 0) stats.Add("Health: " + itemSo.CurrentHealth);
+        if (itemSo.Damage > 0) stats.Add("Damage: " + itemSo.Damage);
+        if (itemSo.Speed > 0) stats.Add("Speed: " + itemSo.Speed);
+        if (itemSo.Duration > 0) stats.Add("Duration: " + itemSo.Duration);
+
+        UpdateStatTexts(stats);
     }
 
-    /// <summary>
-    /// 隐藏物品信息
-    /// </summary>
     public void HandItemInfo()
     {
-        infoPanel.alpha = 0;
-        infoPanel.blocksRaycasts = false;
-        itemNameText.text = "";
-        itemDescriptionText.text = "";
+        if (infoPanel != null)
+        {
+            infoPanel.alpha = 0f;
+            infoPanel.blocksRaycasts = false;
+        }
+
+        if (itemNameText != null)
+        {
+            itemNameText.text = string.Empty;
+        }
+
+        if (itemDescriptionText != null)
+        {
+            itemDescriptionText.text = string.Empty;
+        }
+
+        UpdateStatTexts(null);
     }
 
-    /// <summary>
-    /// 让信息面板跟随鼠标
-    /// </summary>
     public void FollowMouse()
     {
+        if (infoPanelRect == null)
+        {
+            return;
+        }
+
         Vector3 mousePosition = Input.mousePosition;
-        Vector3 offset = new Vector3(10, -10, 0);
+        Vector3 offset = new Vector3(10f, -10f, 0f);
         infoPanelRect.position = mousePosition + offset;
+    }
+
+    private void UpdateStatTexts(List<string> stats)
+    {
+        if (statTexts == null)
+        {
+            return;
+        }
+
+        int count = stats != null ? stats.Count : 0;
+        for (int i = 0; i < statTexts.Length; i++)
+        {
+            TMP_Text statText = statTexts[i];
+            if (statText == null)
+            {
+                continue;
+            }
+
+            bool hasValue = i < count;
+            statText.text = hasValue ? stats[i] : string.Empty;
+            statText.gameObject.SetActive(hasValue);
+        }
     }
 }

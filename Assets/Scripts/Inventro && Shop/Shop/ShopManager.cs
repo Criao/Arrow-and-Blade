@@ -1,142 +1,166 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
-using Unity.VisualScripting;
 
-/// <summary>
-/// 商店管理器，处理商品展示、购买和出售逻辑
-/// </summary>
 public class ShopManager : MonoBehaviour
 {
-    [SerializeField] private ShopSlot[] shopSlots; // 商店槽位数组
+    [SerializeField] private ShopSlot[] shopSlots;
     [SerializeField] private InventoryManager inventoryManager;
 
-    /// <summary>
-    /// 填充商店物品
-    /// </summary>
     public void PopulateShopItems(List<ShopItem> shopItems)
     {
-        for (int i = 0; i < shopItems.Count && i < shopSlots.Length; i++)
+        if (shopSlots == null)
         {
-            ShopItem shopItem = shopItems[i];
-            shopSlots[i].Initialize(shopItem.itemSo, shopItem.price, shopItem.initialStock);
-            shopSlots[i].gameObject.SetActive(true);
+            Debug.LogWarning($"{nameof(ShopManager)} has no shop slots assigned.");
+            return;
         }
-        for (int i = shopItems.Count; i < shopSlots.Length; i++)
+
+        int slotIndex = 0;
+
+        if (shopItems != null)
         {
-            shopSlots[i].gameObject.SetActive(false);
+            for (int i = 0; i < shopItems.Count && slotIndex < shopSlots.Length; i++, slotIndex++)
+            {
+                ShopSlot slot = shopSlots[slotIndex];
+                if (slot == null)
+                {
+                    continue;
+                }
+
+                ShopItem shopItem = shopItems[i];
+                if (shopItem == null || shopItem.itemSo == null)
+                {
+                    slot.Clear();
+                    slot.gameObject.SetActive(false);
+                    continue;
+                }
+
+                int initialStock = shopItem.initialStock > 0 ? shopItem.initialStock : int.MaxValue;
+                slot.Initialize(shopItem.itemSo, Mathf.Max(0, shopItem.price), initialStock);
+                slot.gameObject.SetActive(true);
+            }
+        }
+
+        for (; slotIndex < shopSlots.Length; slotIndex++)
+        {
+            ShopSlot slot = shopSlots[slotIndex];
+            if (slot == null)
+            {
+                continue;
+            }
+
+            slot.Clear();
+            slot.gameObject.SetActive(false);
         }
     }
 
-    /// <summary>
-    /// 尝试购买物品
-    /// </summary>
-    public void TryBuyItem(ItemSo itemSo, int price)
+    public bool TryBuyItem(ItemSo itemSo, int price)
     {
         if (inventoryManager == null)
         {
-            Debug.LogError("❌ inventoryManager 是 null！");
-            return;
+            Debug.LogWarning($"{nameof(ShopManager)} cannot buy because inventoryManager is missing.");
+            return false;
         }
+
         if (itemSo == null)
         {
-            Debug.LogError("❌ itemSo 是 null！");
-            return;
+            Debug.LogWarning($"{nameof(ShopManager)} cannot buy a missing item.");
+            return false;
         }
 
-        Debug.Log($"尝试购买: {itemSo.ItemName}, 价格:{price}, 当前金币:{inventoryManager.gold}");
-
-        if (inventoryManager.gold < price)
+        int safePrice = Mathf.Max(0, price);
+        if (inventoryManager.gold < safePrice)
         {
-            Debug.Log("❌ 金币不足");
-            return;
+            Debug.Log("Not enough gold.");
+            return false;
         }
 
         if (!HasSpaceForItem(itemSo))
         {
-            Debug.Log("❌ 背包已满");
-            return;
+            Debug.Log("Inventory is full.");
+            return false;
         }
 
-        inventoryManager.gold -= price;
-        inventoryManager.goldText.text = inventoryManager.gold.ToString();
+        inventoryManager.AddGold(-safePrice);
         inventoryManager.AddItem(itemSo, 1);
-        Debug.Log($"✅ 购买成功: {itemSo.ItemName}");
+        return true;
     }
 
-    /// <summary>
-    /// 检查背包是否有空间
-    /// </summary>
     private bool HasSpaceForItem(ItemSo itemSo)
     {
-        foreach (var slot in inventoryManager.itemSlots)
+        if (inventoryManager == null || inventoryManager.itemSlots == null || itemSo == null)
         {
-            if (slot.itemSo == itemSo && slot.quantity < itemSo.StackSize)
-                return true;
-            else if (slot.itemSo == null)
-                return true;
+            return false;
         }
-        return false;
-    }
 
-    /// <summary>
-    /// 出售物品
-    /// </summary>
-    public void SellItem(ItemSo itemSo)
-    {
-        if (itemSo == null)
-            return;
-
-        // 如果物品在商店中，按商店价格-1出售
-        foreach (var slot in shopSlots)
+        int stackSize = Mathf.Max(1, itemSo.StackSize);
+        foreach (InventorySlot slot in inventoryManager.itemSlots)
         {
-            if (slot.ItemSo == itemSo)
+            if (slot == null)
             {
-                inventoryManager.gold += slot.Price - 1;
-                inventoryManager.goldText.text = inventoryManager.gold.ToString();
-                slot.AddStock(1);
-                return;
+                continue;
+            }
+
+            if (slot.itemSo == itemSo && slot.quantity < stackSize)
+            {
+                return true;
+            }
+
+            if (slot.itemSo == null)
+            {
+                return true;
             }
         }
 
-        // 不在商店里的物品，用ItemSo自带的售价
-        inventoryManager.gold += itemSo.SellPrice;
-        inventoryManager.goldText.text = inventoryManager.gold.ToString();
+        return false;
     }
 
-    /// <summary>
-    /// 物品标签页点击事件
-    /// </summary>
+    public bool SellItem(ItemSo itemSo)
+    {
+        if (inventoryManager == null || itemSo == null)
+        {
+            return false;
+        }
+
+        if (shopSlots != null)
+        {
+            foreach (ShopSlot slot in shopSlots)
+            {
+                if (slot == null || slot.ItemSo != itemSo)
+                {
+                    continue;
+                }
+
+                inventoryManager.AddGold(Mathf.Max(0, slot.Price - 1));
+                slot.AddStock(1);
+                return true;
+            }
+        }
+
+        inventoryManager.AddGold(Mathf.Max(0, itemSo.SellPrice));
+        return true;
+    }
+
     public void OnItemTabClicked()
     {
         ShopKeeper.currentShopKeeper?.OpenItemShop();
     }
 
-    /// <summary>
-    /// 武器标签页点击事件
-    /// </summary>
     public void OnWeaponTabClicked()
     {
         ShopKeeper.currentShopKeeper?.OpenWeaponShop();
     }
 
-    /// <summary>
-    /// 护甲标签页点击事件
-    /// </summary>
     public void OnArmourTabClicked()
     {
         ShopKeeper.currentShopKeeper?.OpenArmourShop();
     }
 }
 
-/// <summary>
-/// 商店物品数据类
-/// </summary>
 [Serializable]
 public class ShopItem
 {
-    public ItemSo itemSo; // 物品数据
-    public int price; // 价格
-    public int initialStock = 5; // 初始库存
+    public ItemSo itemSo;
+    public int price;
+    public int initialStock = 5;
 }

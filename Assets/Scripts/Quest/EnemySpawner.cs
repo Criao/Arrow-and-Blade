@@ -31,6 +31,12 @@ public class EnemySpawner : MonoBehaviour
         Debug.Log($"Enemy Prefab: {(enemyPrefab != null ? enemyPrefab.name : "NULL")}");
         Debug.Log($"Spawn Area: Min({spawnAreaMin.x}, {spawnAreaMin.y}) Max({spawnAreaMax.x}, {spawnAreaMax.y})");
 
+        if (enemyPrefab == null)
+        {
+            Debug.LogError("Cannot spawn enemies because enemyPrefab is missing.");
+            return;
+        }
+
         ClearSpawnedEnemies(); // 清除之前生成的敌人
 
         for (int i = 0; i < spawnCount; i++)

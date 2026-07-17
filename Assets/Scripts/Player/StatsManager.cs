@@ -34,9 +34,20 @@ public class StatsManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-        else
+        else if (Instance != this)
+        {
             Destroy(gameObject);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     /// <summary>
@@ -45,7 +56,8 @@ public class StatsManager : MonoBehaviour
     public void UpdateMaxHealth(int amount)
     {
         maxHealth += amount;
-        healthText.text = "HP:" + currentHealth + "/" + maxHealth;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        UpdateHealthText();
     }
 
     /// <summary>
@@ -53,12 +65,9 @@ public class StatsManager : MonoBehaviour
     /// </summary>
     public void UpdateHealth(int amount)
     {
-        currentHealth += amount;
-        if(currentHealth >= maxHealth)
-            currentHealth = maxHealth;
-
-
-        healthText.text = "HP:" + currentHealth + "/" + maxHealth;
+        CurrentHealth += amount;
+        UpdateHealthText();
+        HandleDeathIfNeeded();
     }
 
     /// <summary>
@@ -68,7 +77,7 @@ public class StatsManager : MonoBehaviour
     {
         speed += amount;
         Debug.Log($"速度更新：{speed - amount} → {speed}");
-        statsUI.UpdateAllStats();
+        UpdateStatsUI();
     }
 
     /// <summary>
@@ -78,7 +87,7 @@ public class StatsManager : MonoBehaviour
     {
         damage += amount;
         Debug.Log($"攻击力更新：{damage - amount} → {damage}");
-        statsUI.UpdateAllStats();
+        UpdateStatsUI();
     }
     #region Combat Stats 访问接口
     /// <summary>
@@ -141,5 +150,36 @@ public class StatsManager : MonoBehaviour
     public int MaxHealth => maxHealth;
     #endregion
 
+    private void UpdateHealthText()
+    {
+        if (healthText != null)
+        {
+            healthText.text = "HP:" + currentHealth + "/" + maxHealth;
+        }
+    }
+
+    private void UpdateStatsUI()
+    {
+        if (statsUI != null)
+        {
+            statsUI.UpdateAllStats();
+        }
+    }
+
+    private void HandleDeathIfNeeded()
+    {
+        if (currentHealth > 0)
+        {
+            return;
+        }
+
+        GameOverManager.EnsureInstance().ShowGameOver();
+
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            player.SetActive(false);
+        }
+    }
 
 }

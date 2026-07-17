@@ -12,6 +12,12 @@ public class UseItem : MonoBehaviour
     /// </summary>
     public void ApplyItemEffects(ItemSo itemSo)
     {
+        if (itemSo == null || StatsManager.Instance == null)
+        {
+            Debug.LogWarning("Cannot apply item effects because item or StatsManager is missing.");
+            return;
+        }
+
         Debug.Log($"使用物品：{itemSo.ItemName}，类型：{itemSo.itemType}");
 
         // 根据物品类型应用不同效果
@@ -37,12 +43,18 @@ public class UseItem : MonoBehaviour
     /// </summary>
     private void ApplyNormalItem(ItemSo itemSo)
     {
+        StatsManager stats = StatsManager.Instance;
+        if (stats == null)
+        {
+            return;
+        }
+
         if (itemSo.CurrentHealth > 0)
-            StatsManager.Instance.UpdateHealth(itemSo.CurrentHealth);
+            stats.UpdateHealth(itemSo.CurrentHealth);
         if (itemSo.MaxHealth > 0)
-            StatsManager.Instance.UpdateMaxHealth(itemSo.MaxHealth);
+            stats.UpdateMaxHealth(itemSo.MaxHealth);
         if (itemSo.Speed > 0)
-            StatsManager.Instance.UpdateSpeed(itemSo.Speed);
+            stats.UpdateSpeed(itemSo.Speed);
         if (itemSo.Duration > 0)
             StartCoroutine(EffectTimer(itemSo, itemSo.Duration));
     }
@@ -52,17 +64,23 @@ public class UseItem : MonoBehaviour
     /// </summary>
     private void ApplyMushroomEffect()
     {
+        StatsManager stats = StatsManager.Instance;
+        if (stats == null)
+        {
+            return;
+        }
+
         float random = Random.Range(0f, 1f);
 
         if (random < 0.5f)
         {
             Debug.Log("蘑菇效果：掉1滴血");
-            StatsManager.Instance.UpdateHealth(-1);
+            stats.UpdateHealth(-1);
         }
         else
         {
             Debug.Log("蘑菇效果：增加攻击力1点持续30秒");
-            StatsManager.Instance.UpdateDamage(1);
+            stats.UpdateDamage(1);
             StartCoroutine(RemoveDamageBonus(1, 30f));
         }
     }
@@ -72,9 +90,15 @@ public class UseItem : MonoBehaviour
     /// </summary>
     private void ApplyPumpkinEffect()
     {
+        StatsManager stats = StatsManager.Instance;
+        if (stats == null)
+        {
+            return;
+        }
+
         Debug.Log("南瓜效果：提高移动速度20秒");
         int speedBonus = 2;
-        StatsManager.Instance.UpdateSpeed(speedBonus);
+        stats.UpdateSpeed(speedBonus);
         StartCoroutine(RemoveSpeedBonus(speedBonus, 20f));
     }
 
@@ -84,6 +108,11 @@ public class UseItem : MonoBehaviour
     private IEnumerator RemoveDamageBonus(int amount, float duration)
     {
         yield return new WaitForSecondsRealtime(duration);
+        if (StatsManager.Instance == null)
+        {
+            yield break;
+        }
+
         StatsManager.Instance.UpdateDamage(-amount);
         Debug.Log("蘑菇效果结束：攻击力恢复");
     }
@@ -94,6 +123,11 @@ public class UseItem : MonoBehaviour
     private IEnumerator RemoveSpeedBonus(int amount, float duration)
     {
         yield return new WaitForSecondsRealtime(duration);
+        if (StatsManager.Instance == null)
+        {
+            yield break;
+        }
+
         StatsManager.Instance.UpdateSpeed(-amount);
         Debug.Log("南瓜效果结束：速度恢复");
     }
@@ -104,11 +138,17 @@ public class UseItem : MonoBehaviour
     private IEnumerator EffectTimer(ItemSo itemSo, float duration)
     {
         yield return new WaitForSeconds(duration);
+        StatsManager stats = StatsManager.Instance;
+        if (stats == null)
+        {
+            yield break;
+        }
+
         if (itemSo.CurrentHealth > 0)
-            StatsManager.Instance.UpdateHealth(-itemSo.CurrentHealth);
+            stats.UpdateHealth(-itemSo.CurrentHealth);
         if (itemSo.MaxHealth > 0)
-            StatsManager.Instance.UpdateMaxHealth(-itemSo.MaxHealth);
+            stats.UpdateMaxHealth(-itemSo.MaxHealth);
         if (itemSo.Speed > 0)
-            StatsManager.Instance.UpdateSpeed(-itemSo.Speed);
+            stats.UpdateSpeed(-itemSo.Speed);
     }
 }

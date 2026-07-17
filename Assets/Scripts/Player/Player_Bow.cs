@@ -1,85 +1,184 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
-/// <summary>
-/// 玩家弓箭战斗类，处理瞄准和射箭功能
-/// </summary>
 public class Player_Bow : MonoBehaviour
 {
-    [SerializeField] private Transform launchPoint; // 箭矢发射点
-    [SerializeField] private float shootCoolDown = 0.5f; // 射击冷却时间
-    [SerializeField] private float ShootTimer; // 射击计时器
+    [SerializeField] private Transform launchPoint;
+    [SerializeField] private float shootCoolDown = 0.5f;
+    [SerializeField] private float ShootTimer;
     [SerializeField] private Animator anim;
     [SerializeField] private PlayerMoveMent playerMoveMent;
-    private Vector2 aimDirection = Vector2.right; // 当前瞄准方向
-    private Vector2 lockedAimDirection; // 锁定的瞄准方向（射击时）
+    [SerializeField] private float shootStateTimeout = 1f;
 
-    private void Update()
+    private Vector2 aimDirection = Vector2.right;
+    private Vector2 lockedAimDirection = Vector2.right;
+    private float shootStateTimer;
+    private bool isShotStateActive;
+
+    private void Awake()
     {
-        ShootTimer -= Time.deltaTime;
-        HandleAiming();
+        CacheComponents();
+    }
 
-        // 按下射击键时，锁定瞄准方向并开始射击动画
-        if (Input.GetButtonDown("Shoot") && ShootTimer <= 0)
+    private void CacheComponents()
+    {
+        if (anim == null)
         {
-            lockedAimDirection = aimDirection;
-            playerMoveMent.isShooting = true;
-            anim.SetBool("isShooting", true);
+            anim = GetComponent<Animator>();
+        }
+
+        if (playerMoveMent == null)
+        {
+            playerMoveMent = GetComponent<PlayerMoveMent>();
         }
     }
 
-    /// <summary>
-    /// 启用弓箭模式时，切换动画层
-    /// </summary>
+    private void Update()
+    {
+        if (ShootTimer > 0f)
+        {
+            ShootTimer -= Time.deltaTime;
+        }
+
+        HandleAiming();
+        HandleShootStateTimeout();
+
+        if (Input.GetButtonDown("Shoot") && ShootTimer <= 0f)
+        {
+            StartShot();
+        }
+    }
+
     private void OnEnable()
     {
-        anim.SetLayerWeight(0, 0); // 禁用近战动画层
-        anim.SetLayerWeight(1, 1); // 启用弓箭动画层
+        CacheComponents();
+        CancelShot();
+        SetBowLayer(true);
     }
 
-    /// <summary>
-    /// 禁用弓箭模式时，恢复近战动画层
-    /// </summary>
     private void OnDisable()
     {
-        anim.SetLayerWeight(0, 1);
-        anim.SetLayerWeight(1, 0);
+        CancelShot();
+        SetBowLayer(false);
     }
 
-    /// <summary>
-    /// 处理瞄准方向和动画参数
-    /// </summary>
+    public void CancelShot()
+    {
+        isShotStateActive = false;
+        shootStateTimer = 0f;
+
+        if (playerMoveMent != null)
+        {
+            playerMoveMent.SetShooting(false);
+        }
+
+        if (anim != null)
+        {
+            anim.SetBool("isShooting", false);
+        }
+    }
+
+    public void ResetBowAnimationState()
+    {
+        CancelShot();
+
+        if (anim == null)
+        {
+            return;
+        }
+
+        anim.SetFloat("horizontal", 0f);
+        anim.SetFloat("vertical", 0f);
+        anim.SetFloat("aimX", aimDirection.x);
+        anim.SetFloat("aimY", aimDirection.y);
+    }
+
+    public void SetBowLayerActive(bool active)
+    {
+        SetBowLayer(active);
+    }
+
+    private void StartShot()
+    {
+        if (anim == null)
+        {
+            Debug.LogWarning("Cannot shoot because the bow animator is missing.");
+            return;
+        }
+
+        lockedAimDirection = aimDirection;
+        isShotStateActive = true;
+        shootStateTimer = 0f;
+
+        if (playerMoveMent != null)
+        {
+            playerMoveMent.SetShooting(true);
+        }
+
+        anim.SetBool("isShooting", true);
+    }
+
+    private void HandleShootStateTimeout()
+    {
+        if (!isShotStateActive)
+        {
+            return;
+        }
+
+        shootStateTimer += Time.deltaTime;
+        if (shootStateTimer >= Mathf.Max(0.1f, shootStateTimeout))
+        {
+            CancelShot();
+        }
+    }
+
     private void HandleAiming()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        // 更新瞄准方向
-        if (horizontal != 0 || vertical != 0)
+        if (horizontal != 0f || vertical != 0f)
         {
             aimDirection = new Vector2(horizontal, vertical).normalized;
         }
 
-        // 更新动画参数
+        if (anim == null)
+        {
+            return;
+        }
+
         anim.SetFloat("aimX", aimDirection.x);
         anim.SetFloat("aimY", aimDirection.y);
         anim.SetFloat("horizontal", Mathf.Abs(horizontal));
         anim.SetFloat("vertical", Mathf.Abs(vertical));
     }
 
-    /// <summary>
-    /// 射出箭矢（由动画事件调用）
-    /// </summary>
+    private void SetBowLayer(bool active)
+    {
+        if (anim == null || anim.layerCount <= 1)
+        {
+            return;
+        }
+
+        anim.SetLayerWeight(0, active ? 0f : 1f);
+        anim.SetLayerWeight(1, active ? 1f : 0f);
+    }
+
     public void Shoot()
     {
-        if (ShootTimer <= 0)
+        if (ShootTimer <= 0f)
         {
-            ArrowPool.Instance.GetArrow(launchPoint.position, lockedAimDirection);
+            if (ArrowPool.Instance != null && launchPoint != null)
+            {
+                ArrowPool.Instance.GetArrow(launchPoint.position, lockedAimDirection);
+            }
+            else
+            {
+                Debug.LogWarning("Cannot shoot because ArrowPool or launchPoint is missing.");
+            }
+
             ShootTimer = shootCoolDown;
         }
-        anim.SetBool("isShooting", false);
-        playerMoveMent.isShooting = false;
+
+        CancelShot();
     }
 }
