@@ -41,7 +41,6 @@ public class SceneChange : MonoBehaviour
             // 检查是否有任务进行中
             if (QuestManager.Instance != null && QuestManager.Instance.HasActiveQuest())
             {
-                Debug.Log("任务进行中，无法传送！请先完成或放弃任务。");
                 return;
             }
 

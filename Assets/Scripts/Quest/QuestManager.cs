@@ -67,7 +67,6 @@ public class QuestManager : MonoBehaviour
         activeQuests.Add(newQuest);
         OnQuestStatusChanged?.Invoke(newQuest);
 
-        Debug.Log($"接受任务: {questName}, 需要击杀 {requiredKills} 个 {enemyTag}");
     }
 
     /// <summary>
@@ -82,7 +81,6 @@ public class QuestManager : MonoBehaviour
                 quest.targetEnemyTag == enemyTag)
             {
                 quest.currentKillCount++;
-                Debug.Log($"任务进度: {quest.currentKillCount}/{quest.requiredKillCount}");
 
                 OnQuestStatusChanged?.Invoke(quest);
 
@@ -104,7 +102,6 @@ public class QuestManager : MonoBehaviour
         if (quest != null && quest.status == QuestStatus.InProgress)
         {
             quest.status = QuestStatus.Completed;
-            Debug.Log($"任务完成: {quest.questName}");
 
             OnQuestCompleted?.Invoke(quest);
             OnQuestStatusChanged?.Invoke(quest);
@@ -134,7 +131,6 @@ public class QuestManager : MonoBehaviour
 
             // 从激活列表中移除
             activeQuests.Remove(quest);
-            Debug.Log($"奖励已领取: {quest.questName}");
         }
     }
 
@@ -143,7 +139,6 @@ public class QuestManager : MonoBehaviour
     /// </summary>
     private void GiveGoldReward(int amount)
     {
-        Debug.Log($"获得金币: {amount}");
 
         if (InventoryManager.Instance != null)
         {
@@ -160,7 +155,6 @@ public class QuestManager : MonoBehaviour
     /// </summary>
     private void GiveEquipmentReward(string equipmentID)
     {
-        Debug.Log($"尝试发放装备: {equipmentID}");
 
         if (InventoryManager.Instance == null)
         {
@@ -174,7 +168,6 @@ public class QuestManager : MonoBehaviour
         if (equipment != null)
         {
             InventoryManager.Instance.AddItem(equipment, 1);
-            Debug.Log($"装备 {equipment.ItemName} 已添加到背包");
         }
         else
         {

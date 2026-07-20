@@ -1,12 +1,10 @@
 using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 public class PlayerHealth : MonoBehaviour
 {
     public static PlayerHealth ActiveInstance { get; private set; }
 
-    [SerializeField] private TMP_Text healthText;
     [SerializeField] private Animator healthTextAnimator;
 
     private bool deathHandled;
@@ -79,12 +77,10 @@ public class PlayerHealth : MonoBehaviour
 
     public void UpdateHealthUI()
     {
-        if (healthText == null || StatsManager.Instance == null)
+        if (StatsManager.Instance != null)
         {
-            return;
+            StatsManager.Instance.RefreshHealthUI();
         }
-
-        healthText.text = "HP:" + StatsManager.Instance.CurrentHealth + "/" + StatsManager.Instance.MaxHealth;
     }
 
     private void Died()
@@ -96,7 +92,6 @@ public class PlayerHealth : MonoBehaviour
 
         deathHandled = true;
         StatsManager.Instance.CurrentHealth = 0;
-        Debug.Log("Player died. Showing Game Over.");
 
         PlayerMoveMent movement = GetComponent<PlayerMoveMent>();
         if (movement != null)

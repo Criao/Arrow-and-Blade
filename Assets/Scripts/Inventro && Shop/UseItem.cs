@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -18,21 +17,17 @@ public class UseItem : MonoBehaviour
             return;
         }
 
-        Debug.Log($"使用物品：{itemSo.ItemName}，类型：{itemSo.itemType}");
 
         // 根据物品类型应用不同效果
         switch (itemSo.itemType)
         {
             case ItemType.Normal:
-                Debug.Log("执行普通物品效果");
                 ApplyNormalItem(itemSo);
                 break;
             case ItemType.Mushroom:
-                Debug.Log("执行蘑菇效果");
                 ApplyMushroomEffect();
                 break;
             case ItemType.Pumpkin:
-                Debug.Log("执行南瓜效果");
                 ApplyPumpkinEffect();
                 break;
         }
@@ -76,12 +71,10 @@ public class UseItem : MonoBehaviour
 
         if (random < 0.5f)
         {
-            Debug.Log("蘑菇效果：掉1滴血");
             stats.UpdateHealth(-1);
         }
         else
         {
-            Debug.Log("蘑菇效果：增加攻击力1点持续30秒");
             stats.UpdateDamage(1);
             StartCoroutine(RemoveDamageBonus(1, 30f));
         }
@@ -98,7 +91,6 @@ public class UseItem : MonoBehaviour
             return;
         }
 
-        Debug.Log("南瓜效果：提高移动速度20秒");
         int speedBonus = 2;
         stats.UpdateSpeed(speedBonus);
         StartCoroutine(RemoveSpeedBonus(speedBonus, 20f));
@@ -116,7 +108,6 @@ public class UseItem : MonoBehaviour
         }
 
         StatsManager.Instance.UpdateDamage(-amount);
-        Debug.Log("蘑菇效果结束：攻击力恢复");
     }
 
     /// <summary>
@@ -131,7 +122,6 @@ public class UseItem : MonoBehaviour
         }
 
         StatsManager.Instance.UpdateSpeed(-amount);
-        Debug.Log("南瓜效果结束：速度恢复");
     }
 
     /// <summary>

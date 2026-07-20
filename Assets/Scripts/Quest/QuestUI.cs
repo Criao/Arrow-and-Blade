@@ -83,6 +83,5 @@ public class QuestUI : MonoBehaviour
     /// </summary>
     private void OnQuestCompleted(QuestData quest)
     {
-        Debug.Log($"UI: 任务 {quest.questName} 已完成！");
     }
 }

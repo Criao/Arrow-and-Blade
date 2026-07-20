@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 8915831136905603072}
   - component: {fileID: 4914206182346051462}
   - component: {fileID: 6625155440592327827}
-  - component: {fileID: 6342106780140170234}
   m_Layer: 5
   m_Name: InventoryCanves
   m_TagString: Untagged
@@ -137,18 +136,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c803b780861a0b7498ee139f7f4ee314, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &6342106780140170234
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4026178555259324990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04aa235b964cccb42a0f7d701bb70707, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &7802307045476903420

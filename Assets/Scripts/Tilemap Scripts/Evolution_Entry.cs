@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -15,7 +13,7 @@ public class Evolution_Entry : MonoBehaviour
     /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.tag == "Player")
+        if (collision.CompareTag("Player"))
         {
             // 禁用山体碰撞体，允许玩家穿过
             foreach (Collider2D mountain in mountainColliders)
@@ -28,7 +26,11 @@ public class Evolution_Entry : MonoBehaviour
                 boundary.enabled = true;
             }
             // 提升玩家渲染层级，显示在山体前面
-            collision.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 15;
+            SpriteRenderer spriteRenderer = collision.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sortingOrder = 15;
+            }
         }
     }
 }

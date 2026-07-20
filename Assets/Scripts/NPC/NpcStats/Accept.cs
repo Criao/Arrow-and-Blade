@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -58,12 +56,10 @@ public class Accept : MonoBehaviour
     /// </summary>
     public void ShowChoices(DialogueSO dialogue)
     {
-        Debug.Log("ShowChoices被调用");
         currentDialogue = dialogue;
 
         if (choicesPanel != null)
         {
-            Debug.Log("显示Choices面板");
             choicesPanel.SetActive(true);
 
             // 设置按钮文本（英文）
@@ -99,7 +95,6 @@ public class Accept : MonoBehaviour
     /// </summary>
     private void OnYesClicked()
     {
-        Debug.Log($"玩家接受了任务（金币奖励: {currentDialogue.goldReward}）");
 
         // 接受任务
         if (QuestManager.Instance != null)
@@ -138,7 +133,6 @@ public class Accept : MonoBehaviour
     /// </summary>
     private void OnNoClicked()
     {
-        Debug.Log("玩家拒绝了任务");
 
         // 直接关闭对话
         DialogueManager.Instance.EndDialogue();
@@ -150,7 +144,6 @@ public class Accept : MonoBehaviour
     /// </summary>
     private void OnOption3Clicked()
     {
-        Debug.Log("玩家选择稍后进行");
 
         // 关闭对话，不接受任务
         DialogueManager.Instance.EndDialogue();
@@ -162,7 +155,6 @@ public class Accept : MonoBehaviour
     /// </summary>
     private void OnOption4Clicked()
     {
-        Debug.Log($"玩家接受了任务（装备奖励: {currentDialogue.equipmentReward}）");
 
         // 接受任务
         if (QuestManager.Instance != null)

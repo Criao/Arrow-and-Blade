@@ -27,9 +27,6 @@ public class EnemySpawner : MonoBehaviour
     /// </summary>
     public void SpawnEnemies()
     {
-        Debug.Log("=== 开始生成敌人 ===");
-        Debug.Log($"Enemy Prefab: {(enemyPrefab != null ? enemyPrefab.name : "NULL")}");
-        Debug.Log($"Spawn Area: Min({spawnAreaMin.x}, {spawnAreaMin.y}) Max({spawnAreaMax.x}, {spawnAreaMax.y})");
 
         if (enemyPrefab == null)
         {
@@ -49,7 +46,6 @@ public class EnemySpawner : MonoBehaviour
                 GameObject enemy = Instantiate(enemyPrefab, spawnPos3D, Quaternion.identity);
                 enemy.tag = enemyTag; // 设置标签
                 spawnedEnemies.Add(enemy);
-                Debug.Log($"✓ 生成敌人 {i + 1}/{spawnCount} 在位置: {spawnPos3D}");
             }
             else
             {
@@ -57,7 +53,6 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        Debug.Log($"=== 生成完成，共生成 {spawnedEnemies.Count}/{spawnCount} 个敌人 ===");
     }
 
     /// <summary>

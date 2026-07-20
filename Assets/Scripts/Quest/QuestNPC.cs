@@ -31,7 +31,6 @@ public class QuestNPC : MonoBehaviour
         if (quest.questID == questID)
         {
             questCompleted = true;
-            Debug.Log($"NPC {gameObject.name}: 任务已完成，等待玩家领取奖励");
         }
     }
 

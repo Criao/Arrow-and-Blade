@@ -87,7 +87,6 @@ public class InventoryManager : MonoBehaviour
     {
         gold += amount;
         UpdateGoldUI();
-        Debug.Log($"Gold changed by {amount}. Current gold: {gold}");
     }
 
     public void DropItem(InventorySlot slot)

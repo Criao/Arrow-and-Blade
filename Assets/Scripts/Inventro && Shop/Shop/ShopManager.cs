@@ -71,13 +71,11 @@ public class ShopManager : MonoBehaviour
         int safePrice = Mathf.Max(0, price);
         if (inventoryManager.gold < safePrice)
         {
-            Debug.Log("Not enough gold.");
             return false;
         }
 
         if (!HasSpaceForItem(itemSo))
         {
-            Debug.Log("Inventory is full.");
             return false;
         }
 

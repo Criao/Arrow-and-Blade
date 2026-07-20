@@ -98,7 +98,6 @@ public class ShopSlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandle
 
         if (stock <= 0)
         {
-            Debug.Log("Item is out of stock.");
             return;
         }
 

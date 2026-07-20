@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -46,7 +45,6 @@ public class NPC : MonoBehaviour
         if (quest.questID == questID)
         {
             gameObject.SetActive(true);
-            Debug.Log($"任务完成，NPC {gameObject.name} 重新出现");
         }
     }
 
@@ -105,10 +103,4 @@ public class NPC : MonoBehaviour
     /// <summary>
     /// 播放关闭动画并隐藏对象
     /// </summary>
-    private IEnumerator CloseAndHide(Animator animator, GameObject obj)
-    {
-        animator.Play("Close");
-        yield return new WaitForSeconds(0.5f);
-        obj.SetActive(false);
-    }
 }
